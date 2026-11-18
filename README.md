@@ -1,251 +1,589 @@
-# TailAdmin Next.js - Free Next.js Tailwind Admin Dashboard Template
+# CEDA Innovation Management Platform — Frontend
 
-TailAdmin is a free and open-source admin dashboard template built on **Next.js and Tailwind CSS** providing developers with everything they need to create a feature-rich and data-driven: back-end, dashboard, or admin panel solution for any sort of web project.
+**Burnz Nexus · Next.js + TailAdmin · CEDA Innovation Management Portal prototype**
 
-![TailAdmin - Next.js Dashboard Preview](./banner.png)
+> A secure, accessible and role-based interface for submitting, evaluating, tracking and managing innovations. This repository contains the **frontend only**. The system of record, workflow rules, review permissions and persistence are owned by a separate **Django + Django Ninja** backend.
 
-With TailAdmin Next.js, you get access to all the necessary dashboard UI components, elements, and pages required to build a high-quality and complete dashboard or admin panel. Whether you're building a dashboard or admin panel for a complex web application or a simple website.
+## Project status
 
-TailAdmin utilizes the powerful features of **Next.js 16** and common features of Next.js such as server-side rendering (SSR), static site generation (SSG), and seamless API route integration. Combined with the advancements of **React 19** and the robustness of **TypeScript**, TailAdmin is the perfect solution to help get your project up and running quickly.
+**Status:** Frontend development / integration planning. This README is the target implementation specification, **not** a claim that every screen or feature has already been built. Sections marked **Planned** require implementation and a backend API contract.
 
-## Overview
+**Repository:** `BURNS-NEXUS/ceda-frontend` (private)
 
-TailAdmin provides essential UI components and layouts for building feature-rich, data-driven admin dashboards and control panels. It's built on:
+## Contents
 
-- Next.js 16.x
-- React 19
-- TypeScript
-- Tailwind CSS V4
+- [Product overview](#product-overview)
+- [Objectives and scope](#objectives-and-scope)
+- [Technology](#technology)
+- [Architecture](#architecture)
+- [User roles and portals](#user-roles-and-portals)
+- [Screen inventory](#screen-inventory)
+- [Application and review lifecycle](#application-and-review-lifecycle)
+- [Application form sections](#application-form-sections)
+- [Evaluation rubric](#evaluation-rubric)
+- [Frontend UX standards](#frontend-ux-standards)
+- [Getting started](#getting-started)
+- [Environment variables](#environment-variables)
+- [Suggested project structure](#suggested-project-structure)
+- [Backend integration](#backend-integration)
+- [Authentication and security](#authentication-and-security)
+- [Frontend data and state management](#frontend-data-and-state-management)
+- [Testing and quality](#testing-and-quality)
+- [Delivery roadmap](#delivery-roadmap)
+- [Contribution and collaboration](#contribution-and-collaboration)
+- [Acceptance checklist](#acceptance-checklist)
+- [References and ownership](#references-and-ownership)
 
-### Quick Links
+## Product overview
 
-- [✨ Visit Website](https://tailadmin.com)
-- [📄 Documentation](https://tailadmin.com/docs)
-- [⬇️ Download](https://tailadmin.com/download)
-- [🖌️ Figma Design File (Community Edition)](https://www.figma.com/community/file/1463141366275764364)
-- [⚡ Get PRO Version](https://tailadmin.com/pricing)
+CEDA's innovation-management challenge calls for an online, ready-to-use system that functions as **both an innovation repository and a multi-level evaluation platform**. Burnz Nexus will provide an integrated user experience for innovators, independent evaluators and authorized institutional administrators.
 
-### Demos
+The five outcomes described in the supplied challenge briefing are:
 
-- [Free Version](https://nextjs-free-demo.tailadmin.com)
-- [Pro Version](https://nextjs-demo.tailadmin.com)
+1. **Centralized repository:** secure, searchable innovation records and supporting evidence.
+2. **Multi-level evaluation:** screening, independent assessments and adjudication under defined roles.
+3. **Real-time tracking:** application, review and programme-progress visibility for authorized users.
+4. **Feedback and iteration:** structured feedback, clarification and permitted resubmission.
+5. **Reporting:** configurable metrics and evidence-based programme oversight.
 
-### Other Versions
+The brief also emphasizes privacy, authentication, information access controls, safe file handling, secure hosting, dynamic validation and scoring, and secure notifications.
 
-- [Next.js Version](https://github.com/TailAdmin/free-nextjs-admin-dashboard)
-- [React.js Version](https://github.com/TailAdmin/free-react-tailwind-admin-dashboard)
-- [Vue.js Version](https://github.com/TailAdmin/vue-tailwind-admin-dashboard)
-- [Angular Version](https://github.com/TailAdmin/free-angular-tailwind-dashboard)
-- [Laravel Version](https://github.com/TailAdmin/tailadmin-laravel)
+### Product principles
 
-## Installation
+- **Simple for innovators:** plain-language instructions, draft saving, clear progress and action prompts.
+- **Evidence-first for evaluators:** view proposals and documents beside scoring controls.
+- **Operationally efficient for administrators:** queues, filters, assignments, audit trails and reports.
+- **Secure by default:** private innovation records and minimum necessary access.
+- **Backend-authoritative:** Next.js presents data but cannot authorize decisions or state transitions.
+- **Modular:** reusable components and configurable programmes, forms and rubrics.
+
+## Objectives and scope
+
+### MVP / P0
+
+- Shared authentication shell and role-aware navigation.
+- Innovator registration, profile, application drafts and guided submission wizard.
+- Evidence upload interface and completeness checks.
+- Innovator application timeline and feedback / clarification responses.
+- Admin screening queue, eligibility actions and reviewer assignment.
+- Evaluator conflict declaration, assigned-case queue, six-category scoring and comments.
+- Restricted adjudication and decision-recording workspace.
+- Repository listing, application detail views and authorized document access.
+- Dashboards and basic application / evaluation / turnaround reports.
+- Accessible states for loading, empty results, permission denial and errors.
+
+### Enhancements / P1
+
+- Programme / form / rubric builders (backend-driven, not hard-coded per programme).
+- Advanced search, configurable exports and portfolio analytics.
+- Programme monitoring, milestones and outcome recording.
+- Improved in-app notification centre and document previews.
+
+### Future / P2
+
+- Optional AI proposal-quality assistant with evidence-linked findings and human oversight.
+- Similar-innovation discovery subject to access controls and IP safeguards.
+- Approved institutional integrations, advanced analytics and optional financing workflows.
+
+**Not in the default innovation MVP:** treating loan application fields (e.g., `loan_amount`) as mandatory for all innovators, automated AI approvals, public disclosure of confidential submissions or unrestricted reviewer access.
+
+## Technology
+
+| Layer | Selected technology | Responsibility |
+| --- | --- | --- |
+| Frontend | **Next.js** (App Router) + React + TypeScript | Pages, forms, navigation, client interactions |
+| UI | **TailAdmin for Next.js**, Tailwind CSS | Design system, components, responsive layouts |
+| Backend | **Django + Django Ninja** (separate repository) | Business logic, APIs, permissions, workflows |
+| API contract | OpenAPI 3.1 from Django Ninja | Typed request/response definitions |
+| Auth | Django session cookie + CSRF | Secure authenticated requests |
+| Persistence | Backend-owned database | Application and evaluation records |
+| Evidence files | Backend-controlled private storage | Upload, scan, authorize and download |
+
+Use the installed TailAdmin template's dependencies and package manager as the starting point; do not replace its configuration without reviewing the existing project.
+
+## Architecture
+
+```text
+                         USERS
+              Innovator / Evaluator / Admin
+                            |
+                            v
+                 Next.js + TailAdmin
+                (BURNS-NEXUS/ceda-frontend)
+              Pages / Forms / Dashboards / UX
+                            |
+               Typed HTTPS API requests
+              Session cookie + CSRF header
+                            |
+                            v
+                   Django Ninja API
+                     (ceda-backend)
+         Auth / RBAC / State Machine / Evaluation
+             Files / Audit / Notifications
+                     /           \
+                    v             v
+             Database       Private File Store
+```
+
+**Ownership boundary:** The backend alone decides which users may read or modify records, whether state transitions are valid, when reviews become visible, how scores are persisted, and when applicant-visible feedback is released. Frontend guards are convenience features, never the only enforcement layer.
+
+## User roles and portals
+
+### Innovator — `/innovator`
+
+**Goal:** understand eligibility, submit a strong application and know what happens next.
+
+- Browse eligible programmes and deadlines.
+- Create drafts and complete guided application sections.
+- Upload evidence, verify completeness and submit.
+- Track application status and review the event timeline.
+- Receive clarification requests and approved feedback.
+- Submit new versions when revision is authorized.
+
+### Evaluator — `/evaluator`
+
+**Goal:** assess assigned proposals impartially and efficiently.
+
+- Review assigned cases and due dates.
+- Complete conflict-of-interest declaration **before** access to the assigned evidence.
+- Read proposal sections and approved documents.
+- Enter six criterion scores (1–5) and criterion-level comments.
+- Save review drafts and submit a completed assessment.
+- Keep independent reviewer drafts and scores hidden from peer evaluators.
+
+### Administrator — `/admin`
+
+**Goal:** manage intake, governance, review allocation, programme operations and reporting.
+
+- Monitor intake and screening queues.
+- Check completeness and eligibility, request clarification, record outcomes.
+- Assign qualified evaluators, avoid / resolve conflicts and oversee progress.
+- Manage programmes, documents, users, roles and audit views.
+- Operate repository and reporting tools.
+
+**Adjudicator / committee:** a permission-restricted workspace under `/admin/adjudication` (or a dedicated route if agreed). It compares completed reviews and records authorized decisions and reasons. Being an administrator should **not automatically** imply adjudication permission.
+
+## Screen inventory
+
+| Area | Key screens |
+| --- | --- |
+| Shared | Sign in, registration, session/error pages, account settings, notifications |
+| Innovator | Dashboard, programmes, eligibility, my applications, application wizard, document manager, submission confirmation, timeline, clarification response, feedback, revision history |
+| Evaluator | Dashboard, assigned reviews, conflict declaration, proposal / evidence viewer, rubric scoring, review draft, submitted review confirmation |
+| Admin | Overview, application registry, screening queue, document verification, reviewer assignments, evaluation monitoring, adjudication, decisions, applicant feedback, repository, reports, user / programme settings, audit history |
+
+**Navigation:** use TailAdmin's common visual language with distinct sidebar content for each role. Provide breadcrumbs, status chips, actionable empty states and predictable return paths.
+
+## Application and review lifecycle
+
+**Proposed implementation state machine** — final transitions and exceptions require programme-owner confirmation:
+
+```text
+Draft
+  | submit
+  v
+Submitted --> Administrative Screening
+                  |          |             |
+             Clarification  Ineligible    Eligible
+                  |          |             |
+            Applicant reply Archive    Assign Reviewers
+                  |                        |
+              Re-screen               Independent Reviews
+                                           |
+                                    Review Submissions
+                                           |
+                                      Adjudication
+                                           |
+                                      Decision Record
+                                           |
+                                  Release Approved Feedback
+                                           |
+                               Revise / Monitor / Archive
+```
+
+### Event-to-API ownership
+
+| User action | Frontend behavior | Django responsibility |
+| --- | --- | --- |
+| Create application | Open wizard and show saved draft | Create record and stable ID |
+| Save section | Autosave, show last-saved time | Validate draft fields and persist |
+| Upload evidence | Show progress and scan state | Validate, scan and privately store file |
+| Submit | Show checks and confirmation | Validate completeness, freeze version, transition state, audit |
+| Screen | Display queue and action form | Authorize and persist outcome / reason |
+| Assign reviewer | Show reviewer picker | Check eligibility, conflicts, duplicates and permissions |
+| Submit review | Show validation and confirmation | Validate six scores, lock submission, audit |
+| Adjudicate | Compare approved completed reviews | Enforce authority, preserve rationale and decision |
+| Release feedback | Show applicant-ready message | Separate public feedback from private reviewer notes |
+| Resubmit | Open permitted revision form | Create new version; preserve previous snapshot |
+| View dashboard | Display counts, charts and lists | Return permission-scoped aggregate data |
+
+Keep **workflow state**, **decision outcome**, **review status** and **notification delivery status** distinct; a failed email should not silently alter an application's state.
+
+## Application form sections
+
+The guided innovator wizard should capture the information reviewers need, with programme-configurable required fields and validation.
+
+| Step | Section | Core fields |
+| --- | --- | --- |
+| 1 | Applicant / organization | Names, email, phone, organization details, ownership declarations where applicable |
+| 2 | Project basics | Title, short summary, sector, development stage, location |
+| 3 | Problem & strategic alignment | Problem statement, affected users, relevance to CEDA mission / Vision 2036 |
+| 4 | Innovation & originality | Proposed solution, novelty, alternatives, technology, differentiation |
+| 5 | Impact potential | Expected beneficiaries, jobs, inclusion, environmental outcomes, metrics |
+| 6 | Feasibility & viability | Technical approach, prototype status, resources, costs, risks and mitigation |
+| 7 | Scalability & sustainability | Target market, growth strategy, operational and financial sustainability |
+| 8 | Implementation capacity | Team, skills, governance, partners, milestones and delivery plan |
+| 9 | Supporting evidence | Documents, prototype demonstrations, research, validation and descriptions |
+| 10 | Review & submit | Completeness summary, declarations, privacy / IP acknowledgements, submit action |
+
+These are **proposed UI sections informed by the supplied brief**, not a verbatim official CEDA application form. The backend should define which fields are required per programme. Drafts may be incomplete; **submitted versions must be immutable**.
+
+## Evaluation rubric
+
+The supplied CEDA/Botswana Innovation Agency briefing explicitly provides six evaluation categories and a **1–5 scale** (`1 = Poor`, `5 = Excellent`), with space for comments:
+
+1. **Strategic Alignment:** supports CEDA's mission and Botswana Vision 2036.
+2. **Innovation & Originality:** significant improvement or new concept using emerging technology.
+3. **Impact Potential:** employment, youth/women empowerment and environmental sustainability.
+4. **Feasibility & Viability:** technical soundness and availability of resources.
+5. **Scalability & Sustainability:** replicability, financial sustainability and growth plans.
+6. **Implementation Capacity:** team capability, governance, experience and leadership.
+
+Each criterion needs a score, comment, visible scoring guidance and relevant evidence references. Reviewers can save privately, then explicitly submit. Submitted assessments should be locked or amended through an audited process.
+
+**Not confirmed by the brief:** category weights, total-score formula, pass threshold, number of reviewers, quorum and tie-breaking. Do **not** hard-code these as official rules; use programme configuration and obtain approval.
+
+## Frontend UX standards
+
+- **Visual:** clean institutional SaaS design, restrained colors, light default theme with accessible dark-mode support if provided by TailAdmin.
+- **Innovator:** mobile-first wizard, friendly copy, progress indicator, save-and-return, obvious next step.
+- **Evaluator:** desktop-optimized evidence viewer beside scoring pane; responsive tabs on smaller devices.
+- **Admin:** searchable / filterable tables, bulk actions only where permissions allow, clear audit history.
+- **Forms:** labels, help text, required indicators, character limits, inline validation, focus management and accessible errors.
+- **Statuses:** use both text and color; never rely solely on color.
+- **Async behavior:** display loading, retry, upload scanning, unsaved changes and session-expired states.
+- **Accessibility:** keyboard controls, semantic form labels, contrast and screen-reader announcements.
+- **Design consistency:** reuse TailAdmin controls and shared application, status, document and evaluation components.
+
+## Getting started
 
 ### Prerequisites
 
-To get started with TailAdmin, ensure you have the following prerequisites installed and set up:
+- Git and a supported Node.js LTS runtime.
+- A package manager matching the TailAdmin starter's lockfile (`npm`, `pnpm`, or `yarn`).
+- Access to the private frontend repository and the TailAdmin Next.js template / valid license as applicable.
+- Running Django Ninja backend (local or staging) for integration testing.
 
-- Node.js 20.x or later
-
-### Cloning the Repository
-
-Clone the repository using the following command:
+### Clone and install
 
 ```bash
-git clone https://github.com/TailAdmin/free-nextjs-admin-dashboard.git
+git clone https://github.com/BURNS-NEXUS/ceda-frontend.git
+cd ceda-frontend
 ```
 
-> Windows Users: place the repository near the root of your drive if you face issues while cloning.
+**If the repository has only this README:** first add the official **TailAdmin Next.js** starter in this repository and commit it. Do not run `npm install` until `package.json` exists.
 
-1. Install dependencies:
+**If the TailAdmin starter has been committed:**
 
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+```
 
-   > Use `--legacy-peer-deps` flag if you face peer-dependency error during installation.
+On Windows PowerShell, copy the environment file using:
 
-2. Start the development server:
+```powershell
+Copy-Item .env.example .env.local
+```
 
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+Then open `http://localhost:3000` (or the URL printed by Next.js). If the starter uses another package manager, use its documented equivalent. Consult `package.json` for the actual available scripts; do not assume every script below exists before it has been configured.
 
-## Components
+### Suggested package scripts
 
-TailAdmin is a pre-designed starting point for building a web-based dashboard using Next.js and Tailwind CSS. The template includes:
+```json
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  }
+}
+```
 
-- Sophisticated and accessible sidebar
-- Data visualization components
-- Profile management and custom 404 page
-- Tables and Charts(Line and Bar)
-- Authentication forms and input elements
-- Alerts, Dropdowns, Modals, Buttons and more
-- Can't forget Dark Mode 🕶️
+These are **suggested scripts**, not a replacement for TailAdmin's actual `package.json`. Install and configure Vitest / Playwright before adding their scripts.
 
-All components are built with React and styled using Tailwind CSS for easy customization.
+## Environment variables
 
-## Feature Comparison
+Add an `.env.example` (safe to commit) with documented placeholders:
 
-### Free Version
+```dotenv
+# Server-only: internal Django API base URL (used by Next server/BFF)
+DJANGO_API_URL=http://127.0.0.1:8000
 
-- 1 Unique Dashboard
-- 30+ dashboard components
-- 50+ UI elements
-- Basic Figma design files
-- Community support
+# Optional: browser-facing same-origin path if a proxy/BFF is implemented
+NEXT_PUBLIC_API_BASE_PATH=/api
 
-### Pro Version
+# Display / branding
+NEXT_PUBLIC_APP_NAME=Burnz Nexus Innovation Portal
+NEXT_PUBLIC_APP_ENV=development
+```
 
-- 7 Unique Dashboards: Ecommerce, Analytics, Marketing, CRM, Stocks, SaaS, Logistics, AI, Sales, Finance (more coming soon)
-- 500+ dashboard components and UI elements
-- Complete Figma design file
-- Email support
+**Never commit** `.env.local`, login credentials, API secrets, production session cookies or applicant data. `NEXT_PUBLIC_` values are visible to browsers and must not contain secrets. Exact deployment / proxy variable names should be agreed before integration.
 
-To learn more about pro version features and pricing, visit our [pricing page](https://tailadmin.com/pricing).
+## Suggested project structure
 
-## Changelog
+Adapt to TailAdmin's existing folders; do not rewrite its template structure unnecessarily.
 
-### Version 2.5.2 - [November 17, 2026]
+```text
+ceda-frontend/
+├── public/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/
+│   │   │   ├── login/page.tsx
+│   │   │   └── register/page.tsx
+│   │   ├── innovator/
+│   │   │   ├── dashboard/page.tsx
+│   │   │   ├── applications/page.tsx
+│   │   │   └── applications/[id]/page.tsx
+│   │   ├── evaluator/
+│   │   │   ├── dashboard/page.tsx
+│   │   │   └── reviews/[id]/page.tsx
+│   │   ├── admin/
+│   │   │   ├── dashboard/page.tsx
+│   │   │   ├── screening/page.tsx
+│   │   │   ├── adjudication/page.tsx
+│   │   │   └── reports/page.tsx
+│   │   └── layout.tsx
+│   ├── components/
+│   │   ├── layout/
+│   │   ├── forms/
+│   │   ├── applications/
+│   │   ├── evaluations/
+│   │   ├── documents/
+│   │   └── shared/
+│   ├── features/
+│   │   ├── auth/
+│   │   ├── applications/
+│   │   ├── screening/
+│   │   ├── reviews/
+│   │   ├── decisions/
+│   │   ├── repository/
+│   │   └── reports/
+│   ├── lib/
+│   │   ├── api/
+│   │   ├── auth/
+│   │   └── validation/
+│   └── types/
+├── tests/
+├── .env.example
+├── README.md
+└── package.json
+```
 
-- Added shared `useVectorMapTheme` hook and refactored `VectorMap` for theme-aware (light/dark) regions, markers, and tooltips.
-- Improved RTL support for sliders, progress bars, buttons, alerts, charts, and dropdowns.
-- Updated Alert, Button Group, Dropdown, and Progress Bar components.
-- Fixed noted style and responsiveness issues.
+## Backend integration
 
-### Version 2.5.1 - [November 10, 2026]
+### Current API contracts verified in the supplied Django Ninja OpenAPI
 
-- Updated `next`, `react`, and `react-dom` version addressing GHSA-xqc2-xf4c-x3h3.
-- Updated dependencies
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/health` | Health |
+| GET | `/api/auth/csrf` | Issue CSRF cookie |
+| POST | `/api/auth/register` | Register |
+| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/logout` | Logout |
+| GET | `/api/auth/me` | Session user |
+| GET, POST | `/api/applications/` | List / create |
+| GET, PATCH, DELETE | `/api/applications/{application_id}` | Retrieve / edit / delete |
+| POST | `/api/applications/{application_id}/wf/submit` | Submit |
+| POST | `/api/applications/{application_id}/wf/resubmit` | Resubmit |
+| POST | `/api/applications/{application_id}/wf/feedback` | Existing feedback workflow action; confirm semantics |
+| GET | `/api/clarifications/` | List clarifications |
+| GET | `/api/audit-logs/` | List audit logs |
 
-### Version 2.5.0 - [October 29, 2026]
+**API integration rules:**
 
-- Migrated UI primitives to `@base-ui/react` for fully accessible components.
-- Integrated `@tanstack/react-table` v9 for robust table interaction and filtering.
-- Replaced legacy `@react-jvectormap` and overrides with lightweight `jsvectormap`.
-- Integrated `react-hook-form` with `zod` schema validation across form elements.
-- Decreased custom CSS variables and streamlined Tailwind CSS color tokens.
-- Added micro-animations using `tw-animate-css`.
-- Converted all raw SVG icons to tree-shakeable TSX React components in `src/icons/`.
-- Modernized layout architecture with accessible `SidebarProvider` and `SidebarInset`.
+- Preserve trailing slashes where defined (`/api/applications/`).
+- The existing API uses a `sessionid` cookie and `X-CSRFToken` header for state-changing requests.
+- `UserOut` currently has name / email / ID but **does not expose roles or permissions**; add a reliable permissions contract before implementing protected navigation.
+- Existing `ApplicationIn` requires `loan_amount` and finance-oriented organization data; this is **not sufficient** for the innovation wizard and should become programme-aware.
+- `ApplicationOut.id` is a string while `ClarificationOut.application_id` is an integer; backend should reconcile identifier types.
+- There is a typo in the schema name `FeebackAplicationIn`; coordinate any rename as a contract change.
+- Do not infer API support from a frontend mockup. Display demo data explicitly as mock data until an endpoint is implemented.
 
-### Version 2.4.0 - [September 13, 2026]
+### Proposed endpoints — not present in the provided OpenAPI
 
-- Added Internationalization (Multi Language) support.
-- Updated complete template styles to support RTL.
-- Added Yearly View into calendar page.
-- Updated `maplibre-gl` implementation with `react-map-gl`.
-- Added new requested components and fixed noted accessibility issues.
-- Updated project structure and component compositions for easy adaption.
-- Added AGENTS.md to easily work with AI Agents.
-- Updated all the packages and libraries to the latest versions. Also removed unused packages.
+The following are **requests to the backend team**, not routes guaranteed to work:
 
-### Version 2.3.1 - [May 23, 2026]
+```text
+GET    /api/programmes/
+GET    /api/programmes/{id}/form-schema
+GET    /api/me/permissions
+GET    /api/applications/{id}/timeline
+GET    /api/applications/{id}/completeness
+POST   /api/applications/{id}/documents
+GET    /api/applications/{id}/documents
+GET    /api/documents/{id}/download
+POST   /api/applications/{id}/screening
+POST   /api/clarifications/{id}/respond
+POST   /api/applications/{id}/reviewer-assignments
+GET    /api/reviews/assigned
+POST   /api/reviewer-assignments/{id}/conflict-declaration
+GET    /api/reviews/{id}
+PATCH  /api/reviews/{id}
+POST   /api/reviews/{id}/submit
+GET    /api/applications/{id}/adjudication
+POST   /api/applications/{id}/decisions
+POST   /api/applications/{id}/feedback/release
+GET    /api/applications/{id}/feedback
+GET    /api/repository/innovations
+GET    /api/reports/overview
+GET    /api/notifications/
+```
 
-- Added AI Settings page to configure models, keys, and token limits.
-- Added Maps page with MapLibre GL, Leaflet, and iframe styles.
-- Added Vector Maps page powered by AmCharts 5 geodata (World & USA).
-- Added Radar Charts page with 3 unique formats.
-- Added Radial Progress Charts page featuring 4 custom layout templates.
-- Introduced new Bar Charts Five & Six and Pie Charts Four & Five.
+For every API, frontend and backend developers must agree on request and response schemas, permissions, validation errors, legal states, audit events and expected status codes. Prefer generating TypeScript types from the authoritative OpenAPI schema.
 
-### Version 2.3.0 - [April 28, 2026]
+### Recommended standardized API errors
 
-- **New Feature**: Added **AI Dashboard** with token usage and revenue tracking.
-- **New Feature**: Added **Sales Dashboard** with retention and multi-channel analytics.
-- **New Feature**: Added **Finance Dashboard** with cashflow and balance management.
-- **New Feature**: Introduced **6 New Layout variations** for improved UI flexibility.
-- **Enhancement**: Integrated **Advanced Data Visualization** with 7+ new chart types.
+- `401` authentication required / expired session.
+- `403` authenticated but not permitted.
+- `404` missing or non-disclosable resource.
+- `409` invalid workflow transition or concurrent update.
+- `400` or `422` form validation errors, with field-name keys; pick and document one convention.
 
-### Version 2.2.3 - [March 15, 2026]
+Use stable machine-readable error codes; don't parse English text to infer states.
 
-- update ESLint configuration and dependencies; upgrade Next.js to version 16.1.6
+## Authentication and security
 
-### Version 2.2.2 - [December 30, 2025]
+The supplied briefing places substantial emphasis on confidentiality and IP protection. Implement security jointly with the Django team.
 
-- Fixed date picker positioning and functionality in Statistics Chart.
+1. Prefer a **same-origin proxy / Next.js BFF** or carefully configured cross-origin session strategy. Agree on cookie domains, `Secure`, `HttpOnly`, `SameSite`, CSRF trusted origins and deployment domains.
+2. Fetch Django's CSRF cookie before unsafe requests and send `X-CSRFToken` correctly, without exposing sessions to browser storage.
+3. Never save session tokens or passwords in `localStorage`; never expose privileged tokens through `NEXT_PUBLIC_` variables.
+4. Enforce RBAC **and per-application object authorization on the backend**; front-end route guards do not protect data.
+5. Evaluators must not access peer review drafts, unassigned applications or conflict-blocked evidence.
+6. Only backend-authorized endpoints may return private files; do not use public storage links for submissions.
+7. Show file validation / malware scanning states; never mark an upload ready just because transfer completed.
+8. Do not display confidential reviewer notes in applicant-visible feedback.
+9. Audit submission, viewing of sensitive evidence (as policy requires), scoring, decisions, version changes and permissions changes.
+10. Treat AI-derived suggestions as optional assistance, never as authorized acceptance decisions.
+11. Ensure appropriate consent, privacy, retention and IP acknowledgements; legal terms require institutional approval.
+12. Avoid logging sensitive application contents and full document payloads to the browser console, analytics or error trackers.
 
-### Version 2.1.0 - [November 15, 2025]
+### Reviewer independence
 
-- Updated to Next.js 16.x
-- Fixed all reported minor bugs
+A reviewer completes the conflict declaration before being granted evidence access; saves private scoring drafts; and submits all required criteria. Independent reviewer comments and scores remain hidden from peer evaluators until the programme's policy explicitly permits disclosure. An adjudicator sees completed reviews only where authorized.
 
-### Version 2.0.2 - [March 25, 2025]
+## Frontend data and state management
 
-- Upgraded to Next.js 16.x for [CVE-2025-29927](https://nextjs.org/blog/cve-2025-29927) concerns
-- Included overrides vectormap for packages to prevent peer dependency errors during installation.
-- Migrated from react-flatpickr to flatpickr package for React 19 support
+- **Server state:** fetch data from Django; use a consistent typed API layer and a query/cache approach compatible with TailAdmin.
+- **Wizard state:** separate unsaved edits from successfully persisted draft data; debounce autosave, show errors and avoid silent data loss.
+- **Workflow state:** derive from backend responses, not client-side status toggles.
+- **Uploads:** handle interrupted uploads, scanning, retries and invalid formats.
+- **Optimistic UI:** only for reversible presentation actions; do not optimistically finalize assessments or decisions.
+- **Accessibility:** on validation error, focus the summary / first invalid input and preserve user-entered text.
+- **Mock mode:** label clearly and keep realistic fixtures separate from real API integration code.
 
-### Version 2.0.1 - [February 27, 2025]
+## Testing and quality
 
-#### Update Overview
+### Frontend quality gates
 
-- Upgraded to Tailwind CSS v4 for better performance and efficiency.
-- Updated class usage to match the latest syntax and features.
-- Replaced deprecated class and optimized styles.
+- Type checking and linting pass.
+- Responsive checks across narrow mobile, tablet and desktop layouts.
+- Keyboard navigation, input labels, form error announcements and readable contrast.
+- Empty, loading, error, permission denied, session expired and slow network states.
+- Component tests for form sections, score controls, status badges and permissions-aware navigation.
+- End-to-end workflow against a seeded backend: draft → submit → screen → assign → independent reviews → adjudicate → feedback → permitted revision.
 
-#### Next Steps
+### Security / integration acceptance tests
 
-- Run npm install or yarn install to update dependencies.
-- Check for any style changes or compatibility issues.
-- Refer to the Tailwind CSS v4 [Migration Guide](https://tailwindcss.com/docs/upgrade-guide) on this release. if needed.
-- This update keeps the project up to date with the latest Tailwind improvements. 🚀
+- Innovator cannot fetch a different innovator's application or evidence.
+- Evaluator cannot see unassigned cases or peers' unsubmitted scores.
+- Conflict declaration blocks review access appropriately.
+- All six scores must be integers from 1 to 5; server validates values and required comments according to policy.
+- Invalid transitions return a stable error and do not corrupt the application.
+- Submission versions cannot be silently overwritten.
+- Uploaded evidence cannot be downloaded before authorized clearance.
+- Reports respect user scopes and never reveal restricted records.
 
-### v2.0.0 (February 2025)
+## Delivery roadmap
 
-A major update focused on Next.js 16 implementation and comprehensive redesign.
+| Phase | Frontend deliverable | Backend dependency |
+| --- | --- | --- |
+| 0. Foundation | TailAdmin setup, design tokens, layouts, route shells | Auth / permissions response agreed |
+| 1. Innovator | Profile, programme list, wizard, uploads, timeline | Programme schemas, draft / file / workflow APIs |
+| 2. Evaluator | Queue, conflict declaration, evidence viewer, six-category rubric | Assignments, reviews, rubric versions, access controls |
+| 3. Admin | Screening, assignments, adjudication and feedback release | Screening / decision APIs and audit events |
+| 4. Repository & reports | Search, detailed records, status / trend dashboards | Query, repository and aggregate endpoints |
+| 5. Hardening | Accessibility, E2E tests, security review, demo data | Stable staging APIs, seeded accounts and deployment |
 
-#### Major Improvements
+Use a realistic scenario with **one innovator, two independent reviewers and one authorized adjudicator** for the demonstration. The brief calls for multi-level evaluation but does not prescribe exactly two reviewers: that is a proposed demo configuration.
 
-- Complete redesign using Next.js 16 App Router and React Server Components
-- Enhanced user interface with Next.js-optimized components
-- Improved responsiveness and accessibility
-- New features including collapsible sidebar, chat screens, and calendar
-- Redesigned authentication using Next.js App Router and server actions
-- Updated data visualization using ApexCharts for React
+## Contribution and collaboration
 
-#### Breaking Changes
+### Branch strategy
 
-- Migrated from Next.js 14 to Next.js 16
-- Chart components now use ApexCharts for React
-- Authentication flow updated to use Server Actions and middleware
+- `main`: reviewed stable code.
+- `develop` (optional): integration branch if the team agrees.
+- `feature/<area>-<description>`: scoped implementation work.
+- `fix/<area>-<description>`: bug fixes.
 
-[Read more](https://tailadmin.com/docs/update-logs/nextjs) on this release.
+### Pull requests
 
-### v1.3.4 (July 01, 2024)
+1. Reference the screen or product requirement.
+2. Include UI screenshots (desktop and mobile) for visible changes.
+3. State which API routes are integrated, mocked or awaiting the backend.
+4. Include validation and error-state behavior.
+5. Run lint, typecheck and relevant tests.
+6. Have a second team member review changes before merging.
 
-- Fixed JSvectormap rendering issues
+### Frontend / backend contract change process
 
-### v1.3.3 (June 20, 2024)
+- Backend publishes an updated OpenAPI definition.
+- Frontend regenerates types, reviews breaking changes and updates API adapters.
+- Both teams test permissions, validation, success and error paths.
+- Breaking changes must be agreed before deployment; do not silently rename fields.
 
-- Fixed build error related to Loader component
+### Suggested issue labels
 
-### v1.3.2 (June 19, 2024)
+`frontend`, `backend-contract`, `ux`, `security`, `bug`, `p0`, `p1`, `blocked`, `needs-review`.
 
-- Added ClickOutside component for dropdown menus
-- Refactored sidebar components
-- Updated Jsvectormap package
+## Acceptance checklist
 
-### v1.3.1 (Feb 12, 2024)
+- [ ] Three role-specific TailAdmin workspaces are navigable and responsive.
+- [ ] Users can authenticate and obtain server-backed permissions.
+- [ ] Innovator can create, autosave, complete and submit an application.
+- [ ] Evidence is uploaded through private, validated backend workflows.
+- [ ] Innovator can see backend-driven status and permitted feedback.
+- [ ] Admin can screen and assign evaluators.
+- [ ] Independent evaluators can score all six categories from 1 to 5 and provide comments.
+- [ ] Adjudicator can review completed assessments and record a reasoned decision.
+- [ ] Feedback release and revision permissions are enforced by Django.
+- [ ] Repository and reporting use real, permission-scoped backend records.
+- [ ] Audit trails capture sensitive workflow actions.
+- [ ] End-to-end and negative authorization tests pass.
+- [ ] Deployment secrets, backups, security and accessibility checks are completed.
 
-- Fixed layout naming consistency
-- Updated styles
+## References and ownership
 
-### v1.3.0 (Feb 05, 2024)
+**Requirements basis:**
 
-- Upgraded to Next.js 14
-- Added Flatpickr integration
-- Improved form elements
-- Enhanced multiselect functionality
-- Added default layout component
+- CEDA / Botswana Innovation Agency briefing slides supplied to the project team: *Expected Outcomes*, *Evaluation Form — Key Categories* and *Safeguarding Innovation & Client Information*.
+- Burnz Nexus *Integrated Innovation Management Platform — Technical Proposal*, dated 12 November 2026.
+- Project-specific frontend form specification and Next.js / Django Ninja integration handoff.
+- Existing Django Ninja OpenAPI document supplied by the backend team.
 
-## License
+**Frontend repository:** `BURNS-NEXUS/ceda-frontend`  
+**Backend:** separate Django + Django Ninja project (repository name / URL to be confirmed).  
+**Maintainer:** Burnz Nexus project team.  
+**License:** Proprietary / private project; no open-source license granted unless the repository owner explicitly adds one.
 
-TailAdmin Next.js Free Version is released under the MIT License.
+> **Important:** This project is an independent prototype developed in response to a CEDA-related innovation-management brief. Repository documentation must not imply official CEDA endorsement, deployment or authorization to access CEDA production systems.
 
-## Support
 
 If you find this project helpful, please consider giving it a star on GitHub. Your support helps us continue developing and maintaining this template.
