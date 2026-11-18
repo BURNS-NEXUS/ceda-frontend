@@ -1,5 +1,8 @@
-// Browser requests stay same-origin; the Next.js route handler proxies to Django.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api/backend";
+// Browser requests must stay same-origin. This intentionally ignores a legacy
+// HTTP NEXT_PUBLIC_API_BASE_URL in the browser and uses the Vercel proxy.
+const API_BASE_URL = typeof window !== "undefined"
+  ? "/api/backend"
+  : (process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api/backend");
 
 export type ApiUser = {
   id: string;
