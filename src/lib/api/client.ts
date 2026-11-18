@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://74.50.99.137:8000";
+// Browser requests stay same-origin; the Next.js route handler proxies to Django.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api/backend";
 
 export type ApiUser = {
   id: string;
