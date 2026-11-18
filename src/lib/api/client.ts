@@ -7,6 +7,20 @@ export type ApiUser = {
   last_name: string;
 };
 
+export type Application = {
+  id: string;
+  project_title: string;
+  state: string;
+  company_no: string;
+  incorporation_date: string;
+  contact_person: string;
+  telephone: string;
+  business_nature: string;
+  business_location: string;
+  loan_amount: number;
+  email: string;
+};
+
 async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
@@ -32,5 +46,13 @@ export function getCurrentUser() {
 }
 
 export function createApplication(payload: Record<string, unknown>) {
-  return apiFetch("/api/applications/", { method: "POST", body: JSON.stringify(payload) });
+  return apiFetch<Application>("/api/applications/", { method: "POST", body: JSON.stringify(payload) });
+}
+
+export function listApplications() {
+  return apiFetch<{ total: number; data: Application[] }>("/api/applications/");
+}
+
+export function submitApplication(applicationId: string) {
+  return apiFetch<Application>(`/api/applications/${applicationId}/wf/submit`, { method: "POST" });
 }
