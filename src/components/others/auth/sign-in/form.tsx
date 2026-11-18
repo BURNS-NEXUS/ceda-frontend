@@ -50,19 +50,26 @@ export default function SignInFormFields() {
   });
 
   const handleFormSubmit = async (data: SignInFormData) => {
-    const account = demoAccounts.find((candidate) => candidate.email === data.email);
+    const normalizedEmail = data.email.trim().toLowerCase();
+    const account = demoAccounts.find((candidate) => candidate.email === normalizedEmail);
     setSubmitError(null);
+
+    // Demo mode must remain usable while the remote Django service is HTTP-only
+    // or unavailable from an HTTPS Vercel deployment.
+    if (account && data.password === account.password) {
+      window.localStorage.setItem("burnz-demo-auth", "authenticated");
+      window.localStorage.setItem("burnz-demo-role", account.role);
+      router.push("/");
+      return;
+    }
+
     try {
-      await login(data.email, data.password);
+      await login(normalizedEmail, data.password);
       window.localStorage.setItem("burnz-demo-auth", "authenticated");
       window.localStorage.setItem("burnz-demo-role", account?.role ?? role);
     } catch {
-      if (!account || data.password !== account.password) {
-        setSubmitError("The backend could not be reached and these are not valid demo credentials.");
-        return;
-      }
-      window.localStorage.setItem("burnz-demo-auth", "authenticated");
-      window.localStorage.setItem("burnz-demo-role", account.role);
+      setSubmitError("The backend is unavailable from this deployment. Use one of the seeded demo accounts or enable HTTPS/CORS on Django.");
+      return;
     }
     router.push("/");
   };
