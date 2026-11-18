@@ -1,0 +1,9 @@
+.codex-attachments/
+next-start.out.log
+next-start.err.log
+.idea/
+.codex/
+.agents/
+.aws/
+node_modules/
+.next/
