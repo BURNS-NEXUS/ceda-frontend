@@ -3,8 +3,9 @@
 import { useDemoRole } from "@/context/demo-role-context";
 import { roleLabels, type DemoRole } from "@/layout/app-layout/sidebar/data";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createApplication, submitApplication } from "@/lib/api/client";
+import { handoffApi } from "@/lib/api/client";
 
 const screens: Record<string, { title: string; description: string; actions: string[]; stats: string[] }> = {
   "innovator/programmes": { title: "Explore programmes", description: "Discover published opportunities, eligibility guidance, deadlines, and application requirements.", actions: ["Browse open programmes", "Review eligibility"], stats: ["2 open programmes", "1 closing soon", "Published criteria"] },
@@ -38,6 +39,28 @@ function WorkflowDemo({ screenKey }: { screenKey: string }) {
   return <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"><h2 className="font-semibold text-gray-800 dark:text-white/90">Workflow readiness</h2><p className="mt-2 text-sm text-gray-500">This mock screen is ready for backend service wiring. Actions, permissions, validation, and progress state are defined by the PRD workflow.</p></section>;
 }
 
+function BackendDataPanel({ screenKey }: { screenKey: string }) {
+  const [state, setState] = useState<"loading" | "ready" | "unavailable">("loading");
+  const [count, setCount] = useState<number | null>(null);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        if (screenKey.includes("applications")) { const result = await handoffApi.timeline("BNX-2026-001"); setCount(Array.isArray(result) ? result.length : null); }
+        else if (screenKey.includes("reviews")) { const result = await handoffApi.reviews(); setCount(Array.isArray(result) ? result.length : null); }
+        else if (screenKey.includes("notifications")) { const result = await handoffApi.notifications(); setCount(Array.isArray(result) ? result.length : null); }
+        else if (screenKey.includes("reports")) await handoffApi.reports();
+        else if (screenKey.includes("audit")) { const result = await handoffApi.reports(); setCount(result ? 1 : 0); }
+        else { setState("unavailable"); return; }
+        setState("ready");
+      } catch { setState("unavailable"); }
+    };
+    void load();
+  }, [screenKey]);
+  if (state === "loading") return <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-500 dark:border-gray-800 dark:bg-white/[0.03]">Loading live backend data…</div>;
+  if (state === "unavailable") return <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/10 dark:text-amber-200">Live backend data is not available for this workspace yet. Demo content is labelled and no action is marked as saved.</div>;
+  return <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-900/10 dark:text-emerald-200">Connected to Django backend{count !== null ? ` · ${count} record${count === 1 ? "" : "s"} returned` : ""}.</div>;
+}
+
 function ApplicationWizard() {
   const [step, setStep] = useState(1); const [submitted, setSubmitted] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null); const steps = ["Project basics", "Innovation & impact", "Team & organisation", "Evidence & uploads", "Review & submit"];
   const handleSubmit = async () => { setBusy(true); setError(null); try { const application = await createApplication({ project_title: "Solar irrigation solution", company_no: "CEDA-DEMO-001", incorporation_date: "2024-01-15", contact_person: "Demo Innovator", telephone: "+27110000000", business_nature: "Clean technology innovation", business_location: "South Africa", loan_amount: 0, email: "innovator@burnz.demo" }); await submitApplication(application.id); setSubmitted(true); } catch { setError("The backend could not complete this submission. Your draft remains available for retry."); } finally { setBusy(false); } };
@@ -65,5 +88,5 @@ export default function WorkspaceScreen() {
   const prefix = key.split("/")[0];
   const allowed = (role === "programmeAdmin" && prefix === "admin") || role === prefix || (role === "adjudicator" && prefix === "adjudicator");
   if (!screen || !allowed) return <div className="rounded-2xl border border-warning-200 bg-warning-50 p-8 dark:border-warning-900/40 dark:bg-warning-900/10"><h1 className="text-xl font-semibold text-warning-800 dark:text-warning-200">Access denied</h1><p className="mt-2 text-sm text-warning-700 dark:text-warning-300">This workspace is not available to the {roleLabels[role]} role. Use the role-specific navigation in the sidebar.</p></div>;
-  return <div className="space-y-6"><div><p className="text-sm font-medium text-brand-600">{roleLabels[role]} portal</p><h1 className="mt-1 text-title-md font-semibold text-gray-800 dark:text-white/90">{screen.title}</h1><p className="mt-2 max-w-3xl text-sm text-gray-500">{screen.description}</p></div><div className="grid gap-4 sm:grid-cols-3">{screen.stats.map((stat) => <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm font-medium text-gray-700 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300" key={stat}>{stat}</div>)}</div><WorkflowDemo screenKey={key} /></div>;
+  return <div className="space-y-6"><div><p className="text-sm font-medium text-brand-600">{roleLabels[role]} portal</p><h1 className="mt-1 text-title-md font-semibold text-gray-800 dark:text-white/90">{screen.title}</h1><p className="mt-2 max-w-3xl text-sm text-gray-500">{screen.description}</p></div><BackendDataPanel screenKey={key} /><div className="grid gap-4 sm:grid-cols-3">{screen.stats.map((stat) => <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm font-medium text-gray-700 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300" key={stat}>{stat}</div>)}</div><WorkflowDemo screenKey={key} /></div>;
 }
