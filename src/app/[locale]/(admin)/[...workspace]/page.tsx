@@ -1,107 +1,35 @@
 "use client";
 
+import AdminWorkspace from "@/components/burnz/admin/admin-workspace";
+import ApplicationWorkspace from "@/components/burnz/applications/application-workspace";
+import SectionCard from "@/components/burnz/ui/section-card";
 import { useDemoRole } from "@/context/demo-role-context";
-import { roleLabels, type DemoRole } from "@/layout/app-layout/sidebar/data";
+import { roleLabels } from "@/layout/app-layout/sidebar/data";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { createApplication, submitApplication } from "@/lib/api/client";
-import { handoffApi } from "@/lib/api/client";
 
-const screens: Record<string, { title: string; description: string; actions: string[]; stats: string[] }> = {
-  "innovator/programmes": { title: "Explore programmes", description: "Discover published opportunities, eligibility guidance, deadlines, and application requirements.", actions: ["Browse open programmes", "Review eligibility"], stats: ["2 open programmes", "1 closing soon", "Published criteria"] },
-  "innovator/applications": { title: "My applications", description: "Resume drafts, view submission versions, follow stage timelines, and read released feedback.", actions: ["Resume draft", "View application timeline"], stats: ["2 applications", "1 draft", "1 under evaluation"] },
-  "innovator/innovations": { title: "My innovations & documents", description: "Manage your own innovation projects, evidence files, and immutable version history.", actions: ["View innovation repository", "Upload evidence"], stats: ["3 projects", "8 documents", "Latest version v2"] },
-  "innovator/notifications": { title: "Notifications", description: "Track application events, clarification requests, review outcomes, and revision deadlines.", actions: ["Mark all as read", "Open latest update"], stats: ["3 unread", "2 delivery states", "Last update today"] },
-  "innovator/profile": { title: "Profile & organisation", description: "Maintain contact identity, organisation details, preferences, and consent information.", actions: ["Edit profile", "Update organisation"], stats: ["Profile complete", "Consent recorded", "English baseline"] },
-  "evaluator/reviews": { title: "Assigned reviews", description: "See only applications assigned to you, sorted by due date, programme, and review status.", actions: ["Open next review", "Filter assignments"], stats: ["4 assigned", "2 in progress", "2 due soon"] },
-  "evaluator/reviews/workspace": { title: "Review workspace", description: "Declare conflicts before evidence access, inspect the versioned application, and score each published criterion.", actions: ["Declare conflict of interest", "Save review draft"], stats: ["Version locked", "6 criteria", "Evidence-linked scoring"] },
-  "evaluator/guidelines": { title: "Review guidelines", description: "Read the published rubric, anchored scoring scale, confidentiality policy, and conflict guidance.", actions: ["Open rubric", "View confidentiality policy"], stats: ["1 rubric version", "6 criteria", "Policy acknowledged"] },
-  "evaluator/profile": { title: "Evaluator profile", description: "Manage your evaluator identity, availability, programme memberships, and notification preferences.", actions: ["Edit profile", "Update availability"], stats: ["Profile complete", "2 programmes", "Notifications on"] },
-  "admin/applications": { title: "Application registry", description: "Search and filter authorized applications by programme, stage, applicant, and date.", actions: ["Open screening queue", "Export authorized records"], stats: ["18 applications", "6 stages", "Search indexed"] },
-  "admin/screening": { title: "Screening queue", description: "Check completeness and eligibility, record reasons, request clarification, and preserve the event history.", actions: ["Screen next case", "Request clarification"], stats: ["6 pending", "3 due today", "0 unassigned"] },
-  "admin/assignments": { title: "Reviewer assignments", description: "Assign eligible reviewers by capacity and programme scope, with COI checks and notifications.", actions: ["Assign reviewers", "Monitor capacity"], stats: ["9 active reviews", "2 overdue", "COI gate enabled"] },
-  "admin/adjudication": { title: "Adjudication queue", description: "Open cases ready for decision, compare independent reviews, and record an authorized rationale.", actions: ["Open decision case", "Compare scores"], stats: ["2 ready", "1 divergence", "Reason required"] },
-  "admin/programmes": { title: "Programmes & settings", description: "Manage seeded programme configuration, dates, published criteria, and versioned rubrics.", actions: ["View programme", "Review rubric version"], stats: ["2 programmes", "1 published", "1 draft"] },
-  "admin/repository": { title: "Innovation repository", description: "Search private, versioned innovation records within your authorized programme scope.", actions: ["Search repository", "Open record"], stats: ["18 records", "Private by default", "Version history on"] },
-  "admin/reports": { title: "Reports & analytics", description: "Review stage funnels, turnaround, outcomes, and reproducible metrics derived from application records.", actions: ["View funnel", "Export CSV"], stats: ["18 applications", "72% completion", "2 programmes"] },
-  "admin/audit": { title: "Audit trail", description: "Trace actor, timestamp, action, record, correlation, and access events without exposing confidential text.", actions: ["Filter events", "Review access events"], stats: ["42 events", "0 anomalies", "Correlation IDs on"] },
-  "adjudicator/queue": { title: "Decision queue", description: "Review cases that have the required independent assessments and are ready for adjudication.", actions: ["Open next case", "Filter by divergence"], stats: ["2 ready", "1 high divergence", "2 reviewers complete"] },
-  "adjudicator/comparison": { title: "Score comparison", description: "Compare independent scores, rationale, cited evidence, and version-specific criteria side by side.", actions: ["Compare reviews", "Open cited evidence"], stats: ["2 reviews", "6 criteria", "Evidence locked"] },
-  "adjudicator/decisions": { title: "Decisions", description: "Record an authorized outcome with a reason, approval requirements, and applicant-facing feedback boundary.", actions: ["Record decision", "Draft feedback"], stats: ["Reason required", "2 outcomes pending", "Audit enabled"] },
-  "adjudicator/history": { title: "Decision history", description: "Review relevant adjudication actions, decision events, and controlled corrections.", actions: ["Filter decisions", "Open event detail"], stats: ["4 decisions", "Immutable events", "Access scoped"] },
+const screens: Record<string, { title: string; description: string }> = {
+  "innovator/programmes": { title: "Explore programmes", description: "Discover published opportunities, eligibility guidance and deadlines." },
+  "innovator/applications": { title: "My applications", description: "Resume drafts, follow submitted versions and review released feedback." },
+  "innovator/innovations": { title: "My innovations & documents", description: "Manage innovation records and supporting evidence." },
+  "innovator/notifications": { title: "Notifications", description: "Track application events and clarification requests." },
+  "innovator/profile": { title: "Profile & organisation", description: "Maintain your contact identity and organisation details." },
+  "evaluator/reviews": { title: "Assigned reviews", description: "Assigned applications sorted by due date and review status." },
+  "evaluator/reviews/workspace": { title: "Review workspace", description: "Inspect a versioned application and score each criterion." },
+  "evaluator/guidelines": { title: "Review guidelines", description: "Published rubric, scoring scale and confidentiality guidance." },
+  "evaluator/profile": { title: "Evaluator profile", description: "Manage your evaluator identity and availability." },
+  "admin/applications": { title: "Application registry", description: "Search and filter authorized applications by stage and applicant." },
+  "admin/screening": { title: "Screening queue", description: "Check completeness and eligibility, and request clarification." },
+  "admin/assignments": { title: "Reviewer assignments", description: "Assign eligible reviewers and monitor capacity." },
+  "admin/adjudication": { title: "Adjudication queue", description: "Compare independent reviews and record an authorized rationale." },
+  "admin/programmes": { title: "Programmes & settings", description: "Manage programme configuration and published criteria." },
+  "admin/repository": { title: "Innovation repository", description: "Search private, versioned innovation records." },
+  "admin/reports": { title: "Reports & analytics", description: "Metrics derived from application records." },
+  "admin/audit": { title: "Audit trail", description: "Trace actor, timestamp, action and record." },
+  "adjudicator/queue": { title: "Decision queue", description: "Cases ready for adjudication." },
+  "adjudicator/comparison": { title: "Score comparison", description: "Compare independent scores and rationale." },
+  "adjudicator/decisions": { title: "Decisions", description: "Record an authorized outcome with a reason." },
+  "adjudicator/history": { title: "Decision history", description: "Read-only decision events." },
 };
-
-function WorkflowDemo({ screenKey }: { screenKey: string }) {
-  if (screenKey === "innovator/applications") return <ApplicationWizard />;
-  if (screenKey === "evaluator/reviews/workspace") return <ReviewForm />;
-  if (screenKey === "admin/screening") return <ScreeningForm />;
-  if (screenKey === "adjudicator/decisions") return <DecisionForm />;
-  return <MockWorkflowPanel screenKey={screenKey} />;
-}
-
-const mockModules: Record<string, { title: string; description: string; fields: string[]; events: string[] }> = {
-  "innovator/innovations": { title: "Evidence & innovation records", description: "Demo upload lifecycle: uploading → scanning → ready. Files remain private until backend authorization is connected.", fields: ["Evidence title", "Document category", "Description"], events: ["Pitch deck.pdf · Ready", "Impact evidence.xlsx · Scanning", "Company registration.pdf · Ready"] },
-  "innovator/notifications": { title: "Application notifications", description: "Demo delivery states for clarifications, screening outcomes, feedback, and revision deadlines.", fields: ["Notification subject", "Message", "Delivery state"], events: ["Clarification requested · Unread", "Screening received · Delivered", "Revision deadline · Scheduled"] },
-  "evaluator/reviews": { title: "Review assignment & COI", description: "Demo assignment receipt with conflict-of-interest gate before evidence access.", fields: ["Assignment", "COI declaration", "Conflict explanation"], events: ["BNX-2026-001 · Due 30 Nov", "COI declaration · Pending", "Review round 1 · Two reviewers"] },
-  "admin/assignments": { title: "Reviewer assignment", description: "Demo reviewer capacity, COI checks, due dates, and assignment notifications.", fields: ["Application", "Reviewer", "Due date"], events: ["Reviewer A · Capacity available", "Reviewer B · COI clear", "Assignment notification · Queued"] },
-  "admin/repository": { title: "Innovation repository", description: "Demo published innovation records with versioned evidence and controlled visibility.", fields: ["Search records", "Publication status", "Version"], events: ["Solar irrigation · v2", "Cold-chain monitoring · v1", "Digital skills hub · Draft"] },
-  "admin/reports": { title: "Live reports & publications", description: "Demo reporting controls. Production metrics will be calculated from Django records.", fields: ["Programme", "Date range", "Report format"], events: ["Application funnel · Updated today", "Turnaround report · Draft", "Publications summary · Ready"] },
-  "admin/audit": { title: "Audit events", description: "Demo immutable event stream showing actor, action, record, timestamp, and correlation ID.", fields: ["Event type", "Actor", "Record ID"], events: ["Application submitted · BNX-2026-001", "Screening decision recorded · SCR-2026-001", "Feedback released · FDB-2026-001"] },
-  "admin/programmes": { title: "Programme publication", description: "Demo programme editor for criteria, dates, rubric version, and publication status.", fields: ["Programme name", "Closing date", "Publication status"], events: ["Solar Innovation Challenge · Published", "Clean mobility pilot · Draft", "Rubric v1.0 · Active"] },
-  "adjudicator/queue": { title: "Adjudication readiness", description: "Demo queue showing review quorum, score divergence, and authority checks.", fields: ["Application", "Quorum", "Authority check"], events: ["BNX-2026-001 · 2 reviews complete", "Score divergence · 0.4", "Decision authority · Confirmed"] },
-  "adjudicator/history": { title: "Decision history", description: "Demo decision events remain read-only and versioned.", fields: ["Decision ID", "Outcome", "Correction reason"], events: ["DEC-2026-001 · Accepted", "DEC-2026-002 · Revision requested", "Audit lock · Enabled"] },
-};
-
-function MockWorkflowPanel({ screenKey }: { screenKey: string }) {
-  const module = mockModules[screenKey] ?? { title: "Workflow workspace", description: "Demo controls are ready for Django persistence.", fields: ["Title", "Details", "Status"], events: ["Draft saved · Just now", "Backend sync · Pending", "Audit event · Demo"] };
-  const storageKey = `burnz-mock-${screenKey}`;
-  const [saved, setSaved] = useState(false);
-  const [value, setValue] = useState("");
-  useEffect(() => { setValue(window.localStorage.getItem(storageKey) ?? ""); }, [storageKey]);
-  const save = () => { window.localStorage.setItem(storageKey, value); setSaved(true); window.setTimeout(() => setSaved(false), 1800); };
-  return <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-semibold text-gray-800 dark:text-white/90">{module.title}</h2><p className="mt-1 text-sm text-gray-500">{module.description}</p></div><span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">Demo data</span></div><div className="mt-6 grid gap-5 lg:grid-cols-[1.1fr_.9fr]"><div className="space-y-3">{module.fields.map((field) => <label key={field} className="block text-sm text-gray-600 dark:text-gray-300">{field}<input value={value} onChange={(event) => setValue(event.target.value)} onBlur={save} className="mt-2 h-11 w-full rounded-lg border border-gray-200 px-3 dark:border-gray-700 dark:bg-gray-900" placeholder={`Enter ${field.toLowerCase()}`} /></label>)}<div className="flex items-center gap-3"><button onClick={save} className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white">Save demo state</button>{saved ? <span className="text-xs text-emerald-600">Saved locally</span> : <span className="text-xs text-gray-500">Autosave on field blur</span>}</div></div><div className="rounded-xl bg-gray-50 p-4 dark:bg-white/[0.04]"><p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Activity preview</p><div className="mt-3 space-y-3">{module.events.map((event) => <div key={event} className="border-s-2 border-brand-500 ps-3 text-sm text-gray-700 dark:text-gray-300">{event}</div>)}</div></div></div></section>;
-}
-
-function BackendDataPanel({ screenKey }: { screenKey: string }) {
-  const [state, setState] = useState<"loading" | "ready" | "unavailable">("loading");
-  const [count, setCount] = useState<number | null>(null);
-  useEffect(() => {
-    const load = async () => {
-      try {
-        if (screenKey.includes("applications")) { const result = await handoffApi.timeline("BNX-2026-001"); setCount(Array.isArray(result) ? result.length : null); }
-        else if (screenKey.includes("reviews")) { const result = await handoffApi.reviews(); setCount(Array.isArray(result) ? result.length : null); }
-        else if (screenKey.includes("notifications")) { const result = await handoffApi.notifications(); setCount(Array.isArray(result) ? result.length : null); }
-        else if (screenKey.includes("reports")) await handoffApi.reports();
-        else if (screenKey.includes("audit")) { const result = await handoffApi.reports(); setCount(result ? 1 : 0); }
-        else { setState("unavailable"); return; }
-        setState("ready");
-      } catch { setState("unavailable"); }
-    };
-    void load();
-  }, [screenKey]);
-  if (state === "loading") return <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-500 dark:border-gray-800 dark:bg-white/[0.03]">Loading live backend data…</div>;
-  if (state === "unavailable") return <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/10 dark:text-amber-200">Live backend data is not available for this workspace yet. Demo content is labelled and no action is marked as saved.</div>;
-  return <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-900/10 dark:text-emerald-200">Connected to Django backend{count !== null ? ` · ${count} record${count === 1 ? "" : "s"} returned` : ""}.</div>;
-}
-
-function ApplicationWizard() {
-  const [step, setStep] = useState(1); const [submitted, setSubmitted] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null); const steps = ["Project basics", "Innovation & impact", "Team & organisation", "Evidence & uploads", "Review & submit"];
-  const handleSubmit = async () => { setBusy(true); setError(null); try { const application = await createApplication({ project_title: "Solar irrigation solution", company_no: "CEDA-DEMO-001", incorporation_date: "2024-01-15", contact_person: "Demo Innovator", telephone: "+27110000000", business_nature: "Clean technology innovation", business_location: "South Africa", loan_amount: 0, email: "innovator@burnz.demo" }); await submitApplication(application.id); setSubmitted(true); } catch { setError("The backend could not complete this submission. Your draft remains available for retry."); } finally { setBusy(false); } };
-  if (submitted) return <SuccessScreen title="Application submitted" message="Django has received the application, frozen the submitted version, and moved it into administrative screening." reference="BNX-2026-001" next="Track screening status from My applications." />;
-  return <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"><div className="flex items-center justify-between"><div><h2 className="font-semibold text-gray-800 dark:text-white/90">New application · draft</h2><p className="mt-1 text-sm text-gray-500">Backend submission is enabled · Draft fields remain editable until submit</p></div><span className="text-sm font-semibold text-brand-600">{step} / {steps.length}</span></div><div className="mt-5 h-2 rounded-full bg-gray-100 dark:bg-gray-800"><div className="h-2 rounded-full bg-brand-600 transition-all" style={{ width: `${(step / steps.length) * 100}%` }} /></div><div className="mt-3 flex justify-between text-[11px] text-gray-500">{steps.map((label) => <span key={label}>{label}</span>)}</div>{error ? <p className="mt-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}<div className="mt-8 grid gap-4 sm:grid-cols-2"><label className="text-sm text-gray-600 dark:text-gray-300">{steps[step - 1]}<input required className="mt-2 h-11 w-full rounded-lg border border-gray-200 px-3 dark:border-gray-700 dark:bg-gray-900" placeholder={step === 1 ? "Solar irrigation solution" : "Enter your response"} /></label><label className="text-sm text-gray-600 dark:text-gray-300">Supporting detail<textarea required className="mt-2 min-h-28 w-full rounded-lg border border-gray-200 p-3 dark:border-gray-700 dark:bg-gray-900" placeholder="Add evidence-linked context" /></label></div><div className="mt-6 flex justify-between"><button disabled={step === 1 || busy} onClick={() => setStep((value) => value - 1)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-40 dark:border-gray-700">Back</button><button disabled={busy} onClick={() => step === steps.length ? handleSubmit() : setStep((value) => value + 1)} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-40">{busy ? "Submitting…" : step === steps.length ? "Submit application" : "Save & continue"}</button></div></section>;
-}
-
-function SuccessScreen({ title, message, reference, next }: { title: string; message: string; reference: string; next: string }) { return <section className="rounded-2xl border border-brand-200 bg-brand-50/50 p-8 text-center dark:border-brand-900/40 dark:bg-brand-900/10"><div className="mx-auto flex size-14 items-center justify-center rounded-full bg-brand-600 text-2xl text-white">✓</div><h2 className="mt-5 text-xl font-semibold text-gray-800 dark:text-white/90">{title}</h2><p className="mx-auto mt-2 max-w-xl text-sm text-gray-600 dark:text-gray-300">{message}</p><div className="mx-auto mt-5 max-w-sm rounded-xl bg-white p-4 text-left shadow-sm dark:bg-gray-900"><p className="text-xs uppercase tracking-wide text-gray-500">Reference</p><p className="mt-1 font-semibold text-gray-800 dark:text-white/90">{reference}</p><p className="mt-3 text-xs text-gray-500">Next step</p><p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{next}</p></div></section>; }
-
-function ReviewForm() {
-  const [scores, setScores] = useState([0, 0, 0, 0, 0, 0]); const [submitted, setSubmitted] = useState(false); const completed = scores.filter(Boolean).length;
-  if (submitted) return <SuccessScreen title="Review submitted" message="Your independent assessment has been recorded and is now locked for adjudication." reference="REV-A-2026-001" next="Return to Assigned reviews to see your remaining queue." />;
-  return <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"><div className="flex justify-between"><div><h2 className="font-semibold text-gray-800 dark:text-white/90">Independent evaluation · BNX-2026-001</h2><p className="mt-1 text-sm text-gray-500">COI cleared · Draft autosave enabled</p></div><span className="text-sm font-semibold text-brand-600">{completed} / 6 scored</span></div><div className="mt-5 h-2 rounded-full bg-gray-100 dark:bg-gray-800"><div className="h-2 rounded-full bg-brand-600" style={{ width: `${(completed / 6) * 100}%` }} /></div><div className="mt-6 space-y-4">{["Problem significance", "Innovation", "Impact", "Feasibility", "Team capability", "Evidence quality"].map((criterion, index) => <div className="rounded-xl border border-gray-100 p-4 dark:border-gray-800" key={criterion}><div className="flex items-center justify-between"><span className="text-sm font-medium text-gray-700 dark:text-gray-300">{criterion}</span><select value={scores[index]} onChange={(event) => setScores((current) => current.map((score, position) => position === index ? Number(event.target.value) : score))} className="rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900"><option value={0}>Select score</option><option value={1}>1 · Limited</option><option value={2}>2 · Developing</option><option value={3}>3 · Strong</option><option value={4}>4 · Excellent</option></select></div><textarea className="mt-3 min-h-20 w-full rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700 dark:bg-gray-900" placeholder="Required rationale and evidence reference" /></div>)}</div><button onClick={() => setSubmitted(true)} disabled={completed < 6} className="mt-6 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40">Submit independent review</button></section>;
-}
-
-function ScreeningForm() { const [decision, setDecision] = useState(""); const [submitted, setSubmitted] = useState(false); if (submitted) return <SuccessScreen title="Screening decision recorded" message={`The application is marked ${decision.toLowerCase()} and the event has been added to the audit trail.`} reference="SCR-2026-001" next="Continue to reviewer assignment." />; return <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"><h2 className="font-semibold text-gray-800 dark:text-white/90">Screen application · BNX-2026-001</h2><p className="mt-1 text-sm text-gray-500">Completeness and eligibility checks are recorded in the audit trail.</p><div className="mt-6 space-y-3">{["Required fields complete", "Evidence files present", "Applicant meets published eligibility", "Declaration accepted"].map((check) => <label className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300" key={check}><input type="checkbox" defaultChecked className="size-4 accent-brand-600" />{check}</label>)}</div><select value={decision} onChange={(event) => setDecision(event.target.value)} className="mt-6 h-11 w-full rounded-lg border border-gray-200 px-3 text-sm dark:border-gray-700 dark:bg-gray-900"><option value="">Choose screening outcome</option><option>Eligible</option><option>Request clarification</option><option>Ineligible</option></select><textarea className="mt-4 min-h-24 w-full rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700 dark:bg-gray-900" placeholder="Reason required for this decision" /><button onClick={() => setSubmitted(true)} disabled={!decision} className="mt-4 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40">Record screening decision</button></section>; }
-
-function DecisionForm() { const [outcome, setOutcome] = useState(""); const [submitted, setSubmitted] = useState(false); if (submitted) return <SuccessScreen title="Decision recorded" message={`The adjudication outcome is ${outcome.toLowerCase()}. Applicant-facing feedback can now be released according to policy.`} reference="DEC-2026-001" next="Release approved feedback or request revision." />; return <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"><h2 className="font-semibold text-gray-800 dark:text-white/90">Record adjudication decision</h2><p className="mt-1 text-sm text-gray-500">Independent reviews are visible; applicant feedback remains separately releasable.</p><div className="mt-6 grid gap-4 sm:grid-cols-3">{[["Reviewer A", "3.8 / 5"], ["Reviewer B", "4.2 / 5"], ["Difference", "0.4"]].map(([label, value]) => <div className="rounded-xl bg-gray-50 p-4 dark:bg-white/[0.04]" key={label}><p className="text-xs text-gray-500">{label}</p><p className="mt-2 text-lg font-semibold text-gray-800 dark:text-white/90">{value}</p></div>)}</div><select value={outcome} onChange={(event) => setOutcome(event.target.value)} className="mt-6 h-11 w-full rounded-lg border border-gray-200 px-3 text-sm dark:border-gray-700 dark:bg-gray-900"><option value="">Choose authorized outcome</option><option>Accept</option><option>Request revision</option><option>Decline</option></select><textarea className="mt-4 min-h-28 w-full rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700 dark:bg-gray-900" placeholder="Decision rationale is required" /><button onClick={() => setSubmitted(true)} disabled={!outcome} className="mt-4 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40">Record decision</button></section>; }
 
 export default function WorkspaceScreen() {
   const { role } = useDemoRole();
@@ -109,7 +37,49 @@ export default function WorkspaceScreen() {
   const key = (params.workspace ?? []).join("/");
   const screen = screens[key];
   const prefix = key.split("/")[0];
-  const allowed = (role === "programmeAdmin" && prefix === "admin") || role === prefix || (role === "adjudicator" && prefix === "adjudicator");
-  if (!screen || !allowed) return <div className="rounded-2xl border border-warning-200 bg-warning-50 p-8 dark:border-warning-900/40 dark:bg-warning-900/10"><h1 className="text-xl font-semibold text-warning-800 dark:text-warning-200">Access denied</h1><p className="mt-2 text-sm text-warning-700 dark:text-warning-300">This workspace is not available to the {roleLabels[role]} role. Use the role-specific navigation in the sidebar.</p></div>;
-  return <div className="space-y-6"><div><p className="text-sm font-medium text-brand-600">{roleLabels[role]} portal</p><h1 className="mt-1 text-title-md font-semibold text-gray-800 dark:text-white/90">{screen.title}</h1><p className="mt-2 max-w-3xl text-sm text-gray-500">{screen.description}</p></div><BackendDataPanel screenKey={key} /><div className="grid gap-4 sm:grid-cols-3">{screen.stats.map((stat) => <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm font-medium text-gray-700 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300" key={stat}>{stat}</div>)}</div><WorkflowDemo screenKey={key} /></div>;
+  const allowed =
+    (role === "programmeAdmin" && prefix === "admin") ||
+    role === prefix ||
+    (role === "adjudicator" && prefix === "adjudicator");
+
+  if (!screen || !allowed) {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-8 dark:border-amber-900/50 dark:bg-amber-950/30">
+        <h1 className="text-lg font-semibold text-amber-900 dark:text-amber-200">Access denied</h1>
+        <p className="mt-2 text-sm text-amber-800 dark:text-amber-300">
+          This workspace is not available to the {roleLabels[role]} role. Use the role-specific navigation in the sidebar.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <p className="text-xs font-medium uppercase tracking-wide text-action-700 dark:text-action-300">
+          {roleLabels[role]} portal
+        </p>
+        <h1 className="mt-1 text-2xl font-semibold text-ink-800 dark:text-white">{screen.title}</h1>
+        <p className="mt-2 max-w-3xl text-sm text-gray-500 dark:text-gray-400">{screen.description}</p>
+      </div>
+
+      {key === "innovator/applications" ? (
+        <ApplicationWorkspace />
+      ) : key.startsWith("admin/") ? (
+        <AdminWorkspace screenKey={key} />
+      ) : (
+        <SectionCard title="Workspace preview" description="This screen does not have a confirmed API contract yet.">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Evaluation, assignment and adjudication endpoints are not part of the current OpenAPI contract. This screen shows a
+            placeholder rather than data that could be mistaken for saved Django records.
+          </p>
+          {key.startsWith("innovator/") ? (
+            <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+              Application creation, applicant details, documents and submission are live under My applications.
+            </p>
+          ) : null}
+        </SectionCard>
+      )}
+    </div>
+  );
 }

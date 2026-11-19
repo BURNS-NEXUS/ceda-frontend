@@ -17,11 +17,13 @@ import { Controller, useForm } from "react-hook-form";
 import { signUpSchema, type SignUpFormData } from "./schema";
 import { useRouter } from "@/i18n/navigation";
 import type { DemoRole } from "@/layout/app-layout/sidebar/data";
+import { register as registerUser } from "@/lib/api/client";
 
 export default function SignUpFormFields() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [role, setRole] = useState<DemoRole>("innovator");
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const router = useRouter();
 
   const {
@@ -42,7 +44,19 @@ export default function SignUpFormFields() {
     mode: "onTouched",
   });
 
-  const handleFormSubmit = async (_data: SignUpFormData) => {
+  const handleFormSubmit = async (data: SignUpFormData) => {
+    setSubmitError(null);
+    try {
+      await registerUser({
+        email: data.email.trim().toLowerCase(),
+        password: data.password,
+        first_name: data.fname,
+        last_name: data.lname,
+      });
+    } catch {
+      setSubmitError("We could not create the account. Check your details and try again, or contact the programme administrator.");
+      return;
+    }
     window.localStorage.setItem("burnz-demo-auth", "authenticated");
     window.localStorage.setItem("burnz-demo-role", role);
     router.push("/");
@@ -205,13 +219,18 @@ export default function SignUpFormFields() {
       </Field>
 
       <div>
+        {submitError ? (
+          <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {submitError}
+          </p>
+        ) : null}
         <Button
           className="w-full"
           size="lg"
           type="submit"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Signing Up..." : "Sign Up"}
+          {isSubmitting ? "Creating account..." : "Sign Up"}
         </Button>
       </div>
     </form>

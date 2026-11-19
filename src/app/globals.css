@@ -7,6 +7,7 @@
 @theme {
   --font-*: initial;
   --font-outfit: Outfit, sans-serif;
+  --font-inter: Inter, ui-sans-serif, system-ui, sans-serif;
 
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;
@@ -40,6 +41,31 @@
   --color-transparent: transparent;
   --color-white: #ffffff;
   --color-black: #101828;
+
+  /* Burnz Nexus product palette — institutional navy with a teal action colour. */
+  --color-canvas: #f8fafc;
+  --color-ink-50: #f4f7fb;
+  --color-ink-100: #e6ecf5;
+  --color-ink-200: #cbd7e8;
+  --color-ink-300: #9fb3d0;
+  --color-ink-400: #6d8ab2;
+  --color-ink-500: #456895;
+  --color-ink-600: #2e4f7a;
+  --color-ink-700: #223d63;
+  --color-ink-800: #172b4d;
+  --color-ink-900: #11223e;
+  --color-ink-950: #0a172b;
+  --color-action-50: #eff9f7;
+  --color-action-100: #d6f0eb;
+  --color-action-200: #aee0d8;
+  --color-action-300: #79c9bd;
+  --color-action-400: #45ac9d;
+  --color-action-500: #209384;
+  --color-action-600: #157f75;
+  --color-action-700: #11675f;
+  --color-action-800: #10524c;
+  --color-action-900: #0e443f;
+  --color-action-950: #072824;
 
   --color-brand-50: rgba(236, 243, 255, 1);
   --color-brand-100: rgba(221, 233, 255, 1);
@@ -123,7 +149,7 @@
   }
 
   body {
-    @apply relative z-1 bg-gray-50 font-outfit font-normal;
+    @apply relative z-1 bg-canvas font-inter font-normal;
   }
 }
 

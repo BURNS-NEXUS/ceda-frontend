@@ -1,7 +1,14 @@
 "use client";
 
 import type React from "react";
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useSyncExternalStore,
+} from "react";
 
 type ThemeMode = "light" | "dark" | "auto";
 type ResolvedTheme = "light" | "dark";
@@ -15,79 +22,90 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const THEME_MODE_KEY = "theme-mode";
+const LEGACY_THEME_KEY = "theme";
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+
+/* --------------------------- theme-mode store ---------------------------- */
+
+const modeListeners = new Set<() => void>();
+
+function readMode(): ThemeMode {
+  if (typeof window === "undefined") return "light";
+  const saved = window.localStorage.getItem(THEME_MODE_KEY);
+  if (saved === "light" || saved === "dark" || saved === "auto") return saved;
+  const legacy = window.localStorage.getItem(LEGACY_THEME_KEY);
+  return legacy === "dark" || legacy === "light" ? legacy : "light";
+}
+
+function subscribeMode(listener: () => void) {
+  modeListeners.add(listener);
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === THEME_MODE_KEY || event.key === LEGACY_THEME_KEY) listener();
+  };
+  window.addEventListener("storage", onStorage);
+  return () => {
+    modeListeners.delete(listener);
+    window.removeEventListener("storage", onStorage);
+  };
+}
+
+function writeMode(mode: ThemeMode) {
+  window.localStorage.setItem(THEME_MODE_KEY, mode);
+  modeListeners.forEach((listener) => listener());
+}
+
+/* ---------------------- prefers-color-scheme store ----------------------- */
+
+function subscribeDark(listener: () => void) {
+  const mql = window.matchMedia(DARK_QUERY);
+  mql.addEventListener("change", listener);
+  return () => mql.removeEventListener("change", listener);
+}
+
+function getDarkSnapshot() {
+  return window.matchMedia(DARK_QUERY).matches;
+}
+
+function getDarkServerSnapshot() {
+  return false;
+}
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [themeMode, setThemeModeState] = useState<ThemeMode>("light");
-  const [theme, setTheme] = useState<ResolvedTheme>("light");
-  const [isInitialized, setIsInitialized] = useState(false);
+  const themeMode = useSyncExternalStore(
+    subscribeMode,
+    readMode,
+    () => "light" as ThemeMode,
+  );
+  const prefersDark = useSyncExternalStore(
+    subscribeDark,
+    getDarkSnapshot,
+    getDarkServerSnapshot,
+  );
+
+  const theme: ResolvedTheme =
+    themeMode === "auto" ? (prefersDark ? "dark" : "light") : themeMode;
 
   useEffect(() => {
-    // This code will only run on the client side
-    const savedMode = localStorage.getItem("theme-mode") as ThemeMode | null;
-    const legacySavedTheme = localStorage.getItem(
-      "theme",
-    ) as ResolvedTheme | null;
-    const initialMode = savedMode || (legacySavedTheme as ThemeMode) || "light";
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.setAttribute("data-color-scheme", theme);
+  }, [theme]);
 
-    setThemeModeState(initialMode);
-    setIsInitialized(true);
-  }, []);
+  const setThemeMode = useCallback((mode: ThemeMode) => writeMode(mode), []);
 
-  useEffect(() => {
-    if (!isInitialized) return;
+  const toggleTheme = useCallback(() => {
+    writeMode(theme === "light" ? "dark" : "light");
+  }, [theme]);
 
-    localStorage.setItem("theme-mode", themeMode);
-
-    if (themeMode === "auto") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-      const handleChange = () => {
-        const resolved = mediaQuery.matches ? "dark" : "light";
-        setTheme(resolved);
-      };
-
-      handleChange();
-
-      mediaQuery.addEventListener("change", handleChange);
-      return () => {
-        mediaQuery.removeEventListener("change", handleChange);
-      };
-    } else {
-      setTheme(themeMode as ResolvedTheme);
-    }
-  }, [themeMode, isInitialized]);
-
-  useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem("theme", theme);
-      if (theme === "dark") {
-        document.documentElement.classList.add("dark");
-        document.documentElement.setAttribute("data-color-scheme", "dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-        document.documentElement.setAttribute("data-color-scheme", "light");
-      }
-    }
-  }, [theme, isInitialized]);
-
-  const setThemeMode = (mode: ThemeMode) => {
-    setThemeModeState(mode);
-  };
-
-  const toggleTheme = () => {
-    setThemeModeState((prevMode) => {
-      const currentResolved = theme;
-      return currentResolved === "light" ? "dark" : "light";
-    });
-  };
+  const value = useMemo(
+    () => ({ theme, themeMode, setThemeMode, toggleTheme }),
+    [theme, themeMode, setThemeMode, toggleTheme],
+  );
 
   return (
-    <ThemeContext.Provider
-      value={{ theme, themeMode, setThemeMode, toggleTheme }}
-    >
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 };
 

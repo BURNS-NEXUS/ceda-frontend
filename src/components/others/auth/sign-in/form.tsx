@@ -18,7 +18,7 @@ import { Controller, useForm } from "react-hook-form";
 import { signInSchema, type SignInFormData } from "./schema";
 import { useRouter } from "@/i18n/navigation";
 import type { DemoRole } from "@/layout/app-layout/sidebar/data";
-import { login } from "@/lib/api/client";
+import { ApiError, login } from "@/lib/api/client";
 
 const demoAccounts: { role: DemoRole; label: string; email: string; password: string }[] = [
   { role: "innovator", label: "Innovator portal", email: "innovator@burnz.demo", password: "Demo123!" },
@@ -67,8 +67,12 @@ export default function SignInFormFields() {
       await login(normalizedEmail, data.password);
       window.localStorage.setItem("burnz-demo-auth", "authenticated");
       window.localStorage.setItem("burnz-demo-role", account?.role ?? role);
-    } catch {
-      setSubmitError("The backend is unavailable from this deployment. Use one of the seeded demo accounts or enable HTTPS/CORS on Django.");
+    } catch (caught) {
+      setSubmitError(
+        caught instanceof ApiError && caught.status === 401
+          ? "The email or password is incorrect."
+          : "The backend is unavailable. Check the connection and try again.",
+      );
       return;
     }
     router.push("/");

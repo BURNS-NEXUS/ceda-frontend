@@ -7,13 +7,13 @@ import { DirectionProvider } from "@base-ui/react/direction-provider";
 import "flatpickr/dist/flatpickr.css";
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
-import { Outfit } from "next/font/google";
+import { Inter } from "next/font/google";
 import { notFound } from "next/navigation";
 import "simplebar-react/dist/simplebar.min.css";
 import "swiper/css/bundle";
 import "../globals.css";
 
-const outfit = Outfit({
+const inter = Inter({
   subsets: ["latin"],
 });
 
@@ -41,7 +41,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={rtl ? "rtl" : "ltr"}>
       <body
-        className={cn("relative isolate dark:bg-gray-900", outfit.className)}
+        className={cn("relative isolate dark:bg-ink-950", inter.className)}
       >
         <NextIntlClientProvider>
           <ThemeProvider>
