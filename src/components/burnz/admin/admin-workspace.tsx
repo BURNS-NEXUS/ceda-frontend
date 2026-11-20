@@ -17,6 +17,7 @@ import DocumentManager from "../documents/document-manager";
 import { errorMessage, PanelEmpty, PanelError, PanelSkeleton } from "../ui/async-state";
 import SectionCard from "../ui/section-card";
 import StatusBadge, { toneForState } from "../ui/status-badge";
+import RoleDemoWorkspace from "../role-demo-workspace";
 
 function useLoad<T>(loader: () => Promise<T>, deps: unknown[]) {
   const [data, setData] = useState<T | null>(null);
@@ -259,12 +260,5 @@ export default function AdminWorkspace({ screenKey }: { screenKey: string }) {
   if (screenKey === "admin/screening") return <ScreeningPanel />;
   if (screenKey === "admin/audit") return <AuditPanel />;
   if (screenKey === "admin/clarifications") return <ClarificationPanel />;
-  return (
-    <SectionCard title="Workspace not connected" description="This screen uses a contract that has not been confirmed yet.">
-      <p className="text-sm text-gray-600 dark:text-gray-300">
-        The confirmed NinjaAPI contract covers applications, workflow actions, clarifications, audit logs, documents and applicant detail records.
-        Reviewer assignment, adjudication and reporting screens remain demonstration-only until their endpoints are published.
-      </p>
-    </SectionCard>
-  );
+  return <RoleDemoWorkspace screenKey={screenKey} />;
 }

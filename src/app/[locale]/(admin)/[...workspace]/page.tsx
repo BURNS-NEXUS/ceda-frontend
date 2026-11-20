@@ -2,10 +2,10 @@
 
 import AdminWorkspace from "@/components/burnz/admin/admin-workspace";
 import ApplicationWorkspace from "@/components/burnz/applications/application-workspace";
-import SectionCard from "@/components/burnz/ui/section-card";
 import { useDemoRole } from "@/context/demo-role-context";
 import { roleLabels } from "@/layout/app-layout/sidebar/data";
 import { useParams } from "next/navigation";
+import RoleDemoWorkspace from "@/components/burnz/role-demo-workspace";
 
 const screens: Record<string, { title: string; description: string }> = {
   "innovator/programmes": { title: "Explore programmes", description: "Discover published opportunities, eligibility guidance and deadlines." },
@@ -67,19 +67,7 @@ export default function WorkspaceScreen() {
         <ApplicationWorkspace />
       ) : key.startsWith("admin/") ? (
         <AdminWorkspace screenKey={key} />
-      ) : (
-        <SectionCard title="Workspace preview" description="This screen does not have a confirmed API contract yet.">
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Evaluation, assignment and adjudication endpoints are not part of the current OpenAPI contract. This screen shows a
-            placeholder rather than data that could be mistaken for saved Django records.
-          </p>
-          {key.startsWith("innovator/") ? (
-            <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
-              Application creation, applicant details, documents and submission are live under My applications.
-            </p>
-          ) : null}
-        </SectionCard>
-      )}
+      ) : <RoleDemoWorkspace screenKey={key} />}
     </div>
   );
 }
