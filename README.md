@@ -322,18 +322,17 @@ These are **suggested scripts**, not a replacement for TailAdmin's actual `packa
 Add an `.env.example` (safe to commit) with documented placeholders:
 
 ```dotenv
-# Server-only: internal Django API base URL (used by Next server/BFF)
-DJANGO_API_URL=http://127.0.0.1:8000
-
-# Optional: browser-facing same-origin path if a proxy/BFF is implemented
-NEXT_PUBLIC_API_BASE_PATH=/api
+# Server-only: Django origin used by the /api/backend proxy (never exposed to browsers)
+BACKEND_API_ORIGIN=http://127.0.0.1:8000
 
 # Display / branding
 NEXT_PUBLIC_APP_NAME=Burnz Nexus Innovation Portal
 NEXT_PUBLIC_APP_ENV=development
 ```
 
-**Never commit** `.env.local`, login credentials, API secrets, production session cookies or applicant data. `NEXT_PUBLIC_` values are visible to browsers and must not contain secrets. Exact deployment / proxy variable names should be agreed before integration.
+Vercel deployments set `BACKEND_API_ORIGIN` in `vercel.json`. Change the value there (or override it in the Vercel project settings) when the Django host changes; the local proxy falls back to the default origin when the variable is unset.
+
+**Never commit** `.env.local`, login credentials, API secrets, production session cookies or applicant data. `NEXT_PUBLIC_` values are visible to browsers and must not contain secrets.
 
 ## Suggested project structure
 
