@@ -80,7 +80,7 @@ export default function AppSidebar() {
     <Sidebar side="left" collapsible="icon">
       <AppSidebarHeader showContent={showContent} />
 
-      <SidebarContent className="overflow-y-auto px-5 duration-300 ease-linear">
+      <SidebarContent className="overflow-y-auto px-5 duration-300 ease-linear group-data-[collapsible=icon]/sidebar:px-2">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
             {activeSections.map((section) => (
