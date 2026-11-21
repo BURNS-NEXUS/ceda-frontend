@@ -50,7 +50,9 @@ export default function SidebarMenuItem({
             className={cn(
               "group menu-item cursor-pointer",
               isItemActive ? "menu-item-active" : "menu-item-inactive",
-              !showContent ? "lg:justify-center" : "lg:justify-start",
+              !showContent
+                ? "lg:justify-center group-data-[collapsible=icon]/sidebar:justify-center"
+                : "lg:justify-start",
             )}
           >
             <span
@@ -110,7 +112,9 @@ export default function SidebarMenuItem({
             className={cn(
               "group menu-item",
               isItemActive ? "menu-item-active" : "menu-item-inactive",
-              !showContent ? "lg:justify-center" : "lg:justify-start",
+              !showContent
+                ? "lg:justify-center group-data-[collapsible=icon]/sidebar:justify-center"
+                : "lg:justify-start",
             )}
           >
             <span
