@@ -54,15 +54,15 @@ export default function AppHeader() {
         <div className="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 sm:gap-4 xl:justify-normal xl:border-b-0 xl:px-0 xl:py-4 dark:border-gray-800">
           <Button
             variant="outline"
-            size="icon"
-            className="text-gray-500 lg:size-11 dark:text-gray-400"
+            size="icon-sm"
+            className="size-9 text-gray-500 dark:text-gray-400"
             onClick={toggleSidebar}
             aria-label={t("toggleSidebar")}
           >
             {openMobile ? (
-              <XIcon className="size-6" />
+              <XIcon className="size-5" />
             ) : (
-              <MenuTwoIcon className="size-auto! rtl:-scale-x-100" />
+              <MenuTwoIcon className="size-5! rtl:-scale-x-100" />
             )}
           </Button>
 
