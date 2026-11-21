@@ -55,7 +55,7 @@ export default function AppHeader() {
           <Button
             variant="outline"
             size="icon-sm"
-            className="size-9 text-gray-500 dark:text-gray-400"
+            className="size-9 text-gray-500 xl:hidden dark:text-gray-400"
             onClick={toggleSidebar}
             aria-label={t("toggleSidebar")}
           >

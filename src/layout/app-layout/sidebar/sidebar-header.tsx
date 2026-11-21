@@ -1,6 +1,7 @@
 "use client";
 
-import { SidebarHeader } from "@/components/ui/sidebar";
+import { SidebarHeader, SidebarTrigger } from "@/components/ui/sidebar";
+import { MenuTwoIcon } from "@/icons";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/utils";
 import Image from "next/image";
@@ -13,7 +14,8 @@ export default function AppSidebarHeader({
   showContent,
 }: AppSidebarHeaderProps) {
   return (
-    <SidebarHeader className="px-5 pt-5 pb-8">
+    <SidebarHeader className="px-3 pt-3 pb-8">
+      <div className="flex items-center justify-between gap-3">
       <Link
         href="/"
         className={cn(
@@ -53,6 +55,13 @@ export default function AppSidebarHeader({
           />
         )}
       </Link>
+        <SidebarTrigger
+          className="hidden size-9 rounded-lg text-gray-500 xl:flex dark:text-gray-400"
+          aria-label="Toggle sidebar"
+        >
+          <MenuTwoIcon className="size-6! rtl:-scale-x-100" />
+        </SidebarTrigger>
+      </div>
     </SidebarHeader>
   );
 }
