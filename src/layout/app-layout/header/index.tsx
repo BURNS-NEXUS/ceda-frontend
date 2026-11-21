@@ -8,9 +8,8 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { useSidebar } from "@/components/ui/sidebar";
 import { Link } from "@/i18n/navigation";
-import { HorizontalDotsIcon, MenuTwoIcon, SearchIcon, XIcon } from "@/icons";
+import { HorizontalDotsIcon, SearchIcon } from "@/icons";
 import NotificationDropdown from "@/layout/header/notification-dropdown";
 import ThemeToggleButton from "@/layout/header/theme-toggler";
 import UserDropdown from "@/layout/header/user-dropdown";
@@ -25,7 +24,6 @@ export default function AppHeader() {
   const t = useTranslations("header");
   const inputRef = useRef<HTMLInputElement>(null);
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-  const { openMobile, toggleSidebar } = useSidebar();
   const { role } = useDemoRole();
 
   const toggleApplicationMenu = () => {
@@ -52,20 +50,6 @@ export default function AppHeader() {
       <div className="flex grow flex-col items-center justify-between xl:flex-row xl:px-6">
         {/* Left side content */}
         <div className="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 sm:gap-4 xl:justify-normal xl:border-b-0 xl:px-0 xl:py-4 dark:border-gray-800">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            className="!size-8 !min-h-8 !min-w-8 !p-0 text-gray-500 xl:hidden dark:text-gray-400"
-            onClick={toggleSidebar}
-            aria-label={t("toggleSidebar")}
-          >
-            {openMobile ? (
-              <XIcon className="size-5" />
-            ) : (
-              <MenuTwoIcon className="size-5! rtl:-scale-x-100" />
-            )}
-          </Button>
-
           <Link href="/" className="xl:hidden">
             <Image
               width={140}
