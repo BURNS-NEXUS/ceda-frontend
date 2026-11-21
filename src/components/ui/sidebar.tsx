@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePathname } from "@/i18n/navigation";
-import { MenuTwoIcon } from "@/icons";
 import { cn } from "@/utils";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
@@ -285,32 +284,6 @@ function Sidebar({
         </div>
       </div>
     </div>
-  );
-}
-
-function SidebarTrigger({
-  className,
-  onClick,
-  ...props
-}: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar();
-
-  return (
-    <Button
-      data-sidebar="trigger"
-      data-slot="sidebar-trigger"
-      variant="ghost"
-      size="icon-sm"
-      className={cn(className)}
-      onClick={(event) => {
-        onClick?.(event);
-        toggleSidebar();
-      }}
-      {...props}
-    >
-      <MenuTwoIcon className="rtl:-scale-x-100" />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
   );
 }
 
@@ -755,6 +728,5 @@ export {
   SidebarProvider,
   SidebarRail,
   SidebarSeparator,
-  SidebarTrigger,
   useSidebar,
 };
