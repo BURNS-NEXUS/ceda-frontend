@@ -57,6 +57,7 @@ export default function SidebarMenuItem({
           >
             <span
               className={cn(
+                "flex size-8 shrink-0 items-center justify-center [&>svg]:size-6! [&>svg]:shrink-0",
                 isItemActive
                   ? "menu-item-icon-active"
                   : "menu-item-icon-inactive",
@@ -119,6 +120,7 @@ export default function SidebarMenuItem({
           >
             <span
               className={cn(
+                "flex size-8 shrink-0 items-center justify-center [&>svg]:size-6! [&>svg]:shrink-0",
                 isItemActive
                   ? "menu-item-icon-active"
                   : "menu-item-icon-inactive",
