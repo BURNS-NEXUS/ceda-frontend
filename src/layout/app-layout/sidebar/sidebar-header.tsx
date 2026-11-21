@@ -1,7 +1,6 @@
 "use client";
 
-import { SidebarHeader, SidebarTrigger } from "@/components/ui/sidebar";
-import { MenuTwoIcon } from "@/icons";
+import { SidebarHeader } from "@/components/ui/sidebar";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/utils";
 import Image from "next/image";
@@ -55,12 +54,6 @@ export default function AppSidebarHeader({
           />
         )}
       </Link>
-        <SidebarTrigger
-          className="hidden !size-8 !min-h-8 !min-w-8 !p-0 rounded-lg text-gray-500 xl:flex dark:text-gray-400"
-          aria-label="Toggle sidebar"
-        >
-          <MenuTwoIcon className="size-5! rtl:-scale-x-100" />
-        </SidebarTrigger>
       </div>
     </SidebarHeader>
   );
