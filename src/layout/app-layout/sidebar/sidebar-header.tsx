@@ -56,7 +56,7 @@ export default function AppSidebarHeader({
         )}
       </Link>
         <SidebarTrigger
-          className="hidden size-8 rounded-lg text-gray-500 xl:flex dark:text-gray-400"
+          className="hidden !size-8 !min-h-8 !min-w-8 !p-0 rounded-lg text-gray-500 xl:flex dark:text-gray-400"
           aria-label="Toggle sidebar"
         >
           <MenuTwoIcon className="size-5! rtl:-scale-x-100" />
