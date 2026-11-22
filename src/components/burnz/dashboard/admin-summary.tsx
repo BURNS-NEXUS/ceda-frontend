@@ -42,7 +42,7 @@ export default function AdminSummary() {
 
   const load = useCallback(async (): Promise<AdminSnapshot> => {
     const [applications, auditLogs, clarifications] = await Promise.all([
-      loadSection(() => listApplications({ take: 100 })),
+      loadSection(() => listApplications()),
       loadSection(() => listAuditLogs({ take: 100 })),
       loadSection(() => listClarifications({ take: 100 })),
     ]);

@@ -31,7 +31,7 @@ export default function NotificationDropdown() {
 
   useEffect(() => {
     if (!isOpen) return;
-    void Promise.all([listApplications({ take: 10 }), listClarifications({ take: 10 })])
+    void Promise.all([listApplications(), listClarifications()])
       .then(([applicationResult, clarificationResult]) => {
         setApplications(applicationResult.data);
         setClarifications(clarificationResult.data);

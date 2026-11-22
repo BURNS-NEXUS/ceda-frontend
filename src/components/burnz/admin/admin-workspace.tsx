@@ -114,7 +114,7 @@ function ApplicationTable({
 
 function RegistryPanel() {
   const { data, loading, error, reload } = useLoad(
-    () => listApplications({ take: 100 }).then((result) => result.data),
+    () => listApplications().then((result) => result.data),
     [],
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -152,7 +152,7 @@ function RegistryPanel() {
 }
 
 function ScreeningPanel() {
-  const applications = useLoad(() => listApplications({ take: 100 }).then((r) => r.data), []);
+  const applications = useLoad(() => listApplications().then((r) => r.data), []);
   const [selectedId, setSelectedId] = useState("");
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);

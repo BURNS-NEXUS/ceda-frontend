@@ -36,7 +36,7 @@ export default function InnovatorSummary() {
     setLoading(true);
     setError(null);
     try {
-      const result = await listApplications({ take: 50 });
+      const result = await listApplications();
       setApplications(result.data);
     } catch (caught) {
       setError(errorMessage(caught));
