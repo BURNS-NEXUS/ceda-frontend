@@ -1,5 +1,6 @@
 {
   "common": {
+    "downloadDocument": "Download document",
     "home": "Home",
     "edit": "Edit",
     "close": "Close",

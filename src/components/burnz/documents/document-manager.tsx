@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   documentsApi,
@@ -21,6 +22,7 @@ export default function DocumentManager({
   canDecide?: boolean;
   onChanged?: () => void;
 }) {
+  const t = useTranslations("common");
   const [required, setRequired] = useState<RequiredDocumentOut[]>([]);
   const [documents, setDocuments] = useState<ApplicationDocumentOut[]>([]);
   const [loading, setLoading] = useState(true);
@@ -188,10 +190,15 @@ export default function DocumentManager({
                     {document.document_type.name}
                   </p>
                   <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                    {document.file_description || document.file.split("/").pop()}
+                    {document.file_description}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
+                  {document.file.endsWith("/download") && (
+                    <a className="text-brand-600 underline dark:text-brand-300" href={`/api/backend/api/applications/${encodeURIComponent(applicationId)}/documents/${encodeURIComponent(document.id)}/download`}>
+                      {t("downloadDocument")}
+                    </a>
+                  )}
                   <StatusBadge label={document.status} tone={toneForState(document.status)} />
                   {canDecide && document.status !== "accepted" ? (
                     <>
