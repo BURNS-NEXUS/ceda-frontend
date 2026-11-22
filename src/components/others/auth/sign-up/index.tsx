@@ -3,10 +3,8 @@
 import { Link } from "@/i18n/navigation";
 import { ChevronLeftIcon } from "@/icons";
 import { cn } from "@/utils";
-import AuthDivider from "../divider";
 import SignUpFormFields from "./form";
 import SignUpHeader from "./header";
-import { SocialButtons } from "./social-button";
 
 export default function SignUp() {
   return (
@@ -30,8 +28,6 @@ export default function SignUp() {
           <SignUpHeader />
 
           <div>
-            <SocialButtons />
-            <AuthDivider />
             <SignUpFormFields />
 
             <div className="mt-5">
