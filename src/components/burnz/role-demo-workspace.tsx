@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import SectionCard from "./ui/section-card";
 
 const copy: Record<string, { title: string; fields: string[]; action: string }> = {
@@ -24,10 +23,5 @@ const copy: Record<string, { title: string; fields: string[]; action: string }> 
 
 export default function RoleDemoWorkspace({ screenKey }: { screenKey: string }) {
   const config = copy[screenKey] ?? { title: "Workspace", fields: ["Title", "Details", "Status"], action: "Save demo state" };
-  const storageKey = `ceda-demo-${screenKey}`;
-  const [value, setValue] = useState("");
-  const [saved, setSaved] = useState(false);
-  useEffect(() => setValue(window.localStorage.getItem(storageKey) ?? ""), [storageKey]);
-  const save = () => { window.localStorage.setItem(storageKey, value); setSaved(true); window.setTimeout(() => setSaved(false), 1800); };
-  return <SectionCard title={config.title} description="Interactive frontend demo. Django persistence will replace local state when the role endpoint is available."><div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">Demo mode · local state only · not yet persisted to Django</div><div className="grid gap-4 sm:grid-cols-2">{config.fields.map((field) => <label key={field} className="text-sm text-gray-600 dark:text-gray-300">{field}<input value={value} onChange={(event) => setValue(event.target.value)} className="mt-2 h-10 w-full rounded-lg border border-gray-200 px-3 dark:border-ink-700 dark:bg-ink-950 dark:text-white" placeholder={`Enter ${field.toLowerCase()}`} /></label>)}</div><div className="mt-5 flex items-center gap-3"><button onClick={save} className="rounded-lg bg-action-600 px-4 py-2 text-sm font-medium text-white">{config.action}</button>{saved ? <span className="text-sm text-emerald-600">Saved locally</span> : null}</div></SectionCard>;
+  return <SectionCard title={config.title} description="This workflow is protected by your Django session and will become editable when its backend endpoint is available."><div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">Backend endpoint required · nothing is being saved locally</div><div className="grid gap-4 sm:grid-cols-2">{config.fields.map((field) => <div key={field} className="rounded-lg border border-gray-200 px-3 py-3 text-sm text-gray-600 dark:border-ink-700 dark:text-gray-300"><span className="block text-xs font-medium uppercase tracking-wide text-gray-400">{field}</span><span className="mt-1 block text-sm">Awaiting Django data</span></div>)}</div></SectionCard>;
 }
