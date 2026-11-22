@@ -44,6 +44,7 @@ function Result({ value }: { value: unknown }) {
   return <span>{String(value ?? "—")}</span>;
 }
 
+const innovationCriteria = new Set(["Strategic Alignment", "Innovation & Originality", "Impact Potential", "Feasibility & Viability", "Scalability & Sustainability", "Implementation Capacity"]);
 type Criterion = {id:number;name:string;max_score:number|string;is_active:boolean;is_required:boolean};
 function ScoreFields() {
   const [rows,setRows] = useState<Criterion[]>([]);
@@ -57,7 +58,7 @@ function ScoreFields() {
   }, []);
   return <fieldset className="grid gap-3"><legend>Assessment scores</legend>{status && <p role="status">{status}</p>}
     {rows.map(row => <div key={row.id} className="grid gap-2 rounded border p-3">
-      <label>{row.name} (0–{row.max_score}) <input name={"score:"+row.id} type="number" min="0" max={row.max_score} step="any" required={row.is_required}/></label>
+      <label>{row.name} (0–{row.max_score}) <input name={"score:"+row.id} type="number" min={innovationCriteria.has(row.name) ? 1 : 0} max={row.max_score} step={innovationCriteria.has(row.name) ? 1 : "any"} required={row.is_required}/></label>
       <label>Reviewer comment <input name={"comment:"+row.id}/></label>
     </div>)}
   </fieldset>;
