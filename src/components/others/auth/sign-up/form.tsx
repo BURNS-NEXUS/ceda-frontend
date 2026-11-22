@@ -16,13 +16,11 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { signUpSchema, type SignUpFormData } from "./schema";
 import { useRouter } from "@/i18n/navigation";
-import type { DemoRole } from "@/layout/app-layout/sidebar/data";
 import { register as registerUser } from "@/lib/api/client";
 
 export default function SignUpFormFields() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [role, setRole] = useState<DemoRole>("innovator");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -57,9 +55,7 @@ export default function SignUpFormFields() {
       setSubmitError("We could not create the account. Check your details and try again, or contact the programme administrator.");
       return;
     }
-    window.localStorage.setItem("burnz-demo-auth", "authenticated");
-    window.localStorage.setItem("burnz-demo-role", role);
-    router.push("/");
+    router.replace("/signin");
   };
 
   return (
@@ -171,16 +167,6 @@ export default function SignUpFormFields() {
         <FieldError errors={[errors.confirmPassword]} />
       </Field>
 
-      <Field>
-        <FieldLabel className="mb-1.5 block">Create account as</FieldLabel>
-        <select value={role} onChange={(event) => setRole(event.target.value as DemoRole)} className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-700 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-          <option value="innovator">Innovator</option>
-          <option value="evaluator">Evaluator</option>
-          <option value="programmeAdmin">Programme admin</option>
-          <option value="adjudicator">Adjudicator</option>
-        </select>
-        <p className="mt-1.5 text-xs text-gray-500">Demo mode: your selected role controls the workspace menu.</p>
-      </Field>
 
       <Field
         orientation="horizontal"

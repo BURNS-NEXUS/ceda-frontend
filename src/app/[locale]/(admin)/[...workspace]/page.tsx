@@ -6,6 +6,7 @@ import { useDemoRole } from "@/context/demo-role-context";
 import { roleLabels } from "@/layout/app-layout/sidebar/data";
 import { useParams } from "next/navigation";
 import RoleDemoWorkspace from "@/components/burnz/role-demo-workspace";
+import WorkflowOperations, { workflowPaths } from "@/components/burnz/workflow-operations";
 
 const screens: Record<string, { title: string; description: string }> = {
   "innovator/programmes": { title: "Explore programmes", description: "Discover published opportunities, eligibility guidance and deadlines." },
@@ -63,8 +64,13 @@ export default function WorkspaceScreen() {
         <p className="mt-2 max-w-3xl text-sm text-gray-500 dark:text-gray-400">{screen.description}</p>
       </div>
 
-      {key === "innovator/applications" ? (
+      {key === "innovator/applications" || key === "innovator/innovations" ? (
         <ApplicationWorkspace />
+      ) : workflowPaths[key] ? (
+        <>
+          {key === "admin/screening" && <AdminWorkspace screenKey={key} />}
+          <WorkflowOperations key={key} paths={workflowPaths[key]} />
+        </>
       ) : key.startsWith("admin/") ? (
         <AdminWorkspace screenKey={key} />
       ) : <RoleDemoWorkspace screenKey={key} />}

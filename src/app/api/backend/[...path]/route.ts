@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_ORIGIN = process.env.BACKEND_API_ORIGIN ?? "http://74.50.99.137:8000";
+const BACKEND_ORIGIN = process.env.BACKEND_API_ORIGIN ?? "https://ceda-api.bawetsi.com";
 // Every prefix in the NinjaAPI 3.1 contract. Anything outside this list is
 // deliberately blocked so the proxy cannot become an open relay.
 const ALLOWED_PREFIXES = [
@@ -8,6 +8,9 @@ const ALLOWED_PREFIXES = [
   "api/auth/",
   "api/me/permissions",
   "api/tasks",
+  "api/openapi.json",
+  "api/absentees",
+  "api/settings",
   "api/scoring-criteria",
   "api/reports",
   "api/applications/",

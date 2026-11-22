@@ -31,15 +31,14 @@ export default function NotificationDropdown() {
 
   useEffect(() => {
     if (!isOpen) return;
-    void Promise.all([listApplications(), listClarifications()])
+    let active = true;
+    void Promise.allSettled([listApplications(), listClarifications()])
       .then(([applicationResult, clarificationResult]) => {
-        setApplications(applicationResult.data);
-        setClarifications(clarificationResult.data);
-      })
-      .catch(() => {
-        setApplications([]);
-        setClarifications([]);
+        if (!active) return;
+        setApplications(applicationResult.status === "fulfilled" ? applicationResult.value.data : []);
+        setClarifications(clarificationResult.status === "fulfilled" ? clarificationResult.value.data : []);
       });
+    return () => { active = false; };
   }, [isOpen]);
 
   const handleOpenChange = (open: boolean) => {
