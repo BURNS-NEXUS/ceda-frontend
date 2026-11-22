@@ -65,6 +65,7 @@ export type ApplicationFilters = {
 
 export type ApplicationFields = {
   project_title: string;
+  application_type: "individual" | "company" | "all";
   company_no: string;
   incorporation_date: string;
   contact_person: string;

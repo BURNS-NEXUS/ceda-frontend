@@ -212,6 +212,7 @@ export default function ApplicationWizard({
       reset({
         ...emptyWizardValues,
         project_title: detail.project_title,
+        application_type: detail.application_type,
         company_no: detail.company_no,
         incorporation_date: detail.incorporation_date,
         contact_person: detail.contact_person,
@@ -469,6 +470,14 @@ export default function ApplicationWizard({
               ))}
               {step === 0 ? (
                 <>
+                  <label className="flex flex-col gap-2">
+                    Application type
+                    <select {...register("application_type")}>
+                      <option value="individual">Individual</option>
+                      <option value="company">Company</option>
+                      <option value="all">All</option>
+                    </select>
+                  </label>
                   <div className="sm:col-span-2">
                     <CheckboxField name="has_current_loan_with_other" label="I currently have a loan with another institution" register={register} />
                   </div>

@@ -15,6 +15,7 @@ import type {
 
 export const wizardSchema = z.object({
   project_title: z.string(),
+  application_type: z.enum(["individual", "company", "all"]),
   company_no: z.string(),
   incorporation_date: z.string(),
   contact_person: z.string(),
@@ -87,6 +88,7 @@ export type WizardValues = z.infer<typeof wizardSchema>;
 
 export const emptyWizardValues: WizardValues = {
   project_title: "",
+  application_type: "individual",
   company_no: "",
   incorporation_date: "",
   contact_person: "",
@@ -166,6 +168,7 @@ export const stepFields: (keyof WizardValues)[][] = [
 export function toApplicationIn(values: WizardValues): ApplicationIn {
   return {
     project_title: values.project_title,
+    application_type: values.application_type,
     company_no: values.company_no,
     incorporation_date: values.incorporation_date,
     contact_person: values.contact_person,
