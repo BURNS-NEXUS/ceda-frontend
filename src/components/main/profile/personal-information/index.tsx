@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PencilIcon } from "@/icons";
 import { cn } from "@/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { defaultPersonalInfo } from "./data";
 import EditPersonalInfoDialog from "./edit-dialog";
 import InfoField from "./info-field";
@@ -18,6 +18,27 @@ export default function PersonalInformationSection({
 }: PersonalInfoCardProps) {
   const [profileData, setProfileData] = useState<PersonalInfo>(data);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("ceda-auth-user");
+    if (!stored) return;
+    try {
+      const user = JSON.parse(stored) as { first_name?: string; last_name?: string; email?: string };
+      const role = window.localStorage.getItem("burnz-demo-role") ?? "user";
+      const roleLabel = role === "programmeAdmin" ? "Programme admin" : role.charAt(0).toUpperCase() + role.slice(1);
+      setProfileData((current) => ({
+        ...current,
+        firstName: user.first_name ?? current.firstName,
+        lastName: user.last_name ?? current.lastName,
+        fullName: `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || "CEDA user",
+        email: user.email ?? current.email,
+        role: roleLabel,
+        avatarUrl: "",
+      }));
+    } catch {
+      // Keep the neutral placeholder profile when stored user data is invalid.
+    }
+  }, []);
 
   const initialLetter = profileData.firstName?.trim()
     ? profileData.firstName.trim()[0].toUpperCase()
@@ -53,7 +74,7 @@ export default function PersonalInformationSection({
         <div className="mt-2 flex items-center gap-4 sm:gap-6">
           <Avatar className="size-16 shrink-0 sm:size-20">
             <AvatarImage
-              src={profileData.avatarUrl || "/images/user/owner.png"}
+              src={profileData.avatarUrl}
               alt={profileData.fullName || "User profile"}
             />
             <AvatarFallback className="bg-brand-400 text-xl font-medium text-white sm:text-2xl dark:bg-brand-400 dark:text-white">

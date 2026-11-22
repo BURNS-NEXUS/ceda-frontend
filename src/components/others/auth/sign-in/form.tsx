@@ -52,9 +52,10 @@ export default function SignInFormFields() {
     setSubmitError(null);
 
     try {
-      await login(normalizedEmail, data.password);
+      const authenticatedUser = await login(normalizedEmail, data.password);
       window.localStorage.setItem("burnz-demo-auth", "authenticated");
       window.localStorage.setItem("burnz-demo-role", seededRoleByEmail[normalizedEmail] ?? "innovator");
+      window.localStorage.setItem("ceda-auth-user", JSON.stringify(authenticatedUser));
     } catch (caught) {
       setSubmitError(
         caught instanceof ApiError && caught.status === 401

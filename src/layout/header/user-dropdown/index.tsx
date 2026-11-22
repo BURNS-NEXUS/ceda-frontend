@@ -26,8 +26,8 @@ import {
 import { cn } from "@/utils";
 import { logout } from "@/lib/api/client";
 import { useLocale, useTranslations } from "next-intl";
-import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { UserOut } from "@/lib/api/types";
 
 export default function UserDropdown() {
   const t = useTranslations("userDropdown");
@@ -35,6 +35,17 @@ export default function UserDropdown() {
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<UserOut | null>(null);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("ceda-auth-user");
+    if (!stored) return;
+    try {
+      setUser(JSON.parse(stored) as UserOut);
+    } catch {
+      window.localStorage.removeItem("ceda-auth-user");
+    }
+  }, []);
 
   const currentLang = getLanguage(locale);
   const CurrentFlagIcon = currentLang.FlagIcon;
@@ -49,23 +60,24 @@ export default function UserDropdown() {
     } finally {
       window.localStorage.removeItem("burnz-demo-auth");
       window.localStorage.removeItem("burnz-demo-role");
+      window.localStorage.removeItem("ceda-auth-user");
       router.push("/signin");
     }
   };
+
+  const fullName = user ? `${user.first_name} ${user.last_name}`.trim() : "CEDA user";
+  const initials = fullName === "CEDA user" ? "CU" : fullName.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger className="dropdown-toggle flex items-center text-gray-700 dark:text-gray-400">
         <span className="me-3 h-11 w-11 overflow-hidden rounded-lg">
-          <Image
-            width={44}
-            height={44}
-            src="/images/user/owner.png"
-            alt="User"
-          />
+          <span className="flex size-11 items-center justify-center rounded-lg bg-brand-50 text-sm font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
+            {initials}
+          </span>
         </span>
 
-        <span className="me-1 block text-sm font-medium">Musharof</span>
+        <span className="me-1 block text-sm font-medium">{fullName}</span>
 
         <ChevronDownIcon
           className={cn(
@@ -78,10 +90,10 @@ export default function UserDropdown() {
       <DropdownMenuContent align="end" sideOffset={12} className="w-65 p-3">
         <div className="px-3 py-2">
           <span className="block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Musharof Chowdhury
+            {fullName}
           </span>
           <span className="mt-0.5 block text-xs text-gray-500 dark:text-gray-400">
-            randomuser@pimjo.com
+            {user?.email ?? "Sign in to load your profile"}
           </span>
         </div>
 
