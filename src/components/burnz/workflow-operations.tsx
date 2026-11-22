@@ -84,7 +84,7 @@ export default function WorkflowOperations({ paths }: { paths: string[] }) {
   if (!selected) return <p>No actions are published for this workflow.</p>;
   const {path,method,op} = selected;
   const body = resolve(op.requestBody?.content["application/json"]?.schema ?? {}, contract);
-  const fields = [...(op.parameters ?? []), ...Object.entries(body.properties ?? {}).map(([name,schema]) => ({ name, schema, in:"body", required: method !== "patch" && body.required?.includes(name) }))];
+  const fields = [...(op.parameters ?? []), ...Object.entries(body.properties ?? {}).map(([name,schema]) => ({ name, schema, in:"body", required: body.required?.includes(name) }))];
   return <section className="space-y-4 rounded-xl border p-5">
     <label className="grid gap-1">Action<select disabled={busy} value={selected.key} onChange={e => {setChoice(e.target.value);setMessage("");setResult(undefined);}}>{entries.map(item => <option key={item.key} value={item.key}>{item.op.summary} ({item.method.toUpperCase()})</option>)}</select></label>
     <form key={selected.key} className="grid gap-3" onSubmit={async e => {
