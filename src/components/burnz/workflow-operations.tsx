@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, mutate } from "@/lib/api/client";
+import { ApiError, apiFetch, mutate } from "@/lib/api/client";
 import { errorMessage } from "./ui/async-state";
 
 type Schema = { type?: string; title?: string; format?: string; enum?: string[]; anyOf?: Schema[]; properties?: Record<string, Schema>; required?: string[]; $ref?: string; items?: Schema };
@@ -118,7 +118,14 @@ export default function WorkflowOperations({ paths }: { paths: string[] }) {
         if(method === "get" && path === "/api/reports/export"){window.location.assign("/api/backend"+url);return;}
         const response = method === "get" ? await apiFetch(url) : await mutate(url,method.toUpperCase(),op.requestBody ? payload : undefined);
         setResult(response);setMessage("Request completed.");
-      } catch(e) {setMessage(errorMessage(e));} finally {setBusy(false);}
+      } catch(e) {
+        const detail = e instanceof ApiError && e.details && typeof e.details === "object" && "detail" in e.details ? e.details.detail : undefined;
+        if (method === "get" && e instanceof ApiError && e.status === 404 && detail === "Scoring session not found") {
+          setMessage("No review has been saved for this application. Choose the scoring PUT action to enter your scores.");
+        } else if (method === "get" && e instanceof ApiError && e.status === 404 && detail === "Adjudication not found") {
+          setMessage("No decision has been recorded for this application yet.");
+        } else setMessage(errorMessage(e));
+      } finally {setBusy(false);}
     }}>
       {fields.map(field => {
         if(field.in === "body" && field.name === "scores") return <ScoreFields key="scores"/>;
