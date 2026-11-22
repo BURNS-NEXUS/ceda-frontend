@@ -19,13 +19,28 @@ import { Link } from "@/i18n/navigation";
 import { BellIcon, DotIcon, XIcon } from "@/icons";
 import { cn, getInitials } from "@/utils";
 import { useTranslations } from "next-intl";
-import { Fragment, useState } from "react";
-import { notifications } from "./data";
+import { Fragment, useEffect, useState } from "react";
+import { listApplications, listClarifications, type ApplicationOut, type ClarificationOut } from "@/lib/api/client";
 
 export default function NotificationDropdown() {
   const t = useTranslations("header.notifications");
   const [isOpen, setIsOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
+  const [applications, setApplications] = useState<ApplicationOut[]>([]);
+  const [clarifications, setClarifications] = useState<ClarificationOut[]>([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    void Promise.all([listApplications({ take: 10 }), listClarifications({ take: 10 })])
+      .then(([applicationResult, clarificationResult]) => {
+        setApplications(applicationResult.data);
+        setClarifications(clarificationResult.data);
+      })
+      .catch(() => {
+        setApplications([]);
+        setClarifications([]);
+      });
+  }, [isOpen]);
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -81,20 +96,28 @@ export default function NotificationDropdown() {
 
         <ScrollArea className="h-96">
           <div className="flex flex-col pe-2">
-            {notifications.map((item) => (
+            {[...applications.map((application) => ({
+              id: `application-${application.id}`,
+              name: "Application update",
+              action: `${application.project_title} is ${application.state.toLowerCase()}`,
+              project: application.company_no,
+            })), ...clarifications.map((clarification) => ({
+              id: `clarification-${clarification.id}`,
+              name: "Clarification requested",
+              action: clarification.response ? "has a response" : "needs your response",
+              project: `Application ${clarification.application_id}`,
+            }))].map((item) => (
               <Fragment key={item.id}>
                 <DropdownMenuItem className="flex items-start gap-3 rounded-lg p-3 hover:bg-gray-100 dark:hover:bg-white/5">
-                  <Avatar size="default">
-                    <AvatarImage src={item.avatar} alt={item.name} />
+                    <Avatar size="default">
                     <AvatarFallback>{getInitials(item.name)}</AvatarFallback>
-                    <AvatarBadge variant={item.status} />
                   </Avatar>
                   <span className="block flex-1 text-start">
                     <span className="mb-1.5 block space-x-1 text-sm text-gray-500 dark:text-gray-400">
                       <span className="font-medium text-gray-800 dark:text-white/90">
                         {item.name}
                       </span>{" "}
-                      <span>{t(item.actionKey)}</span>{" "}
+                      <span>{item.action}</span>{" "}
                       <span className="font-medium text-gray-800 dark:text-white/90">
                         {item.project}
                       </span>
@@ -102,13 +125,16 @@ export default function NotificationDropdown() {
                     <span className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                       <span>{t("project")}</span>
                       <DotIcon className="size-2 text-gray-400 dark:text-gray-500" />
-                      <span>{t(item.timeKey, { count: item.timeCount })}</span>
+                      <span>From Django</span>
                     </span>
                   </span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="my-0.5 bg-gray-100 last-of-type:hidden dark:bg-gray-700" />
               </Fragment>
             ))}
+            {applications.length === 0 && clarifications.length === 0 ? (
+              <p className="p-4 text-sm text-gray-500">No application notifications yet.</p>
+            ) : null}
           </div>
         </ScrollArea>
 

@@ -17,14 +17,11 @@ import { cn } from "@/utils";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { useDemoRole } from "@/context/demo-role-context";
-import { roleLabels } from "@/layout/app-layout/sidebar/data";
 
 export default function AppHeader() {
   const t = useTranslations("header");
   const inputRef = useRef<HTMLInputElement>(null);
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-  const { role } = useDemoRole();
 
   const toggleApplicationMenu = () => {
     setApplicationMenuOpen(!isApplicationMenuOpen);
@@ -115,7 +112,6 @@ export default function AppHeader() {
           )}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
-            <span className="hidden rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-700 md:inline-flex dark:border-brand-900/50 dark:bg-brand-900/20 dark:text-brand-300">Demo mode · {roleLabels[role]}</span>
             <ThemeToggleButton />
 
             <NotificationDropdown />

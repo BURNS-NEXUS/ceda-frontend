@@ -24,6 +24,7 @@ import {
   UserCircleIcon,
 } from "@/icons";
 import { cn } from "@/utils";
+import { logout } from "@/lib/api/client";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { useState } from "react";
@@ -40,6 +41,16 @@ export default function UserDropdown() {
 
   const handleSelectLanguage = (id: Locale) => {
     router.replace(pathname, { locale: id });
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await logout();
+    } finally {
+      window.localStorage.removeItem("burnz-demo-auth");
+      window.localStorage.removeItem("burnz-demo-role");
+      router.push("/signin");
+    }
   };
 
   return (
@@ -153,10 +164,7 @@ export default function UserDropdown() {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem
-          variant="destructive"
-          render={<Link href="/signin" />}
-        >
+        <DropdownMenuItem variant="destructive" onClick={() => void handleSignOut()}>
           <LogOutIcon />
           {t("signOut")}
         </DropdownMenuItem>
