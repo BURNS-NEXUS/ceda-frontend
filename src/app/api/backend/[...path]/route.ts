@@ -50,7 +50,19 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
   const response = await fetch(target, { method: request.method, headers, body, redirect: "follow", cache: "no-store" });
   const output = new NextResponse(response.body, { status: response.status, statusText: response.statusText });
   response.headers.forEach((value, key) => {
-    if (key.toLowerCase() !== "content-encoding" && key.toLowerCase() !== "content-length") output.headers.set(key, value);
+    const lowerKey = key.toLowerCase();
+    if (lowerKey === "content-encoding" || lowerKey === "content-length") return;
+    if (lowerKey === "set-cookie") {
+      // The browser is talking to this same-origin proxy, not the private
+      // Django host. Remove backend-specific cookie domains and make the
+      // session available to all proxied API paths.
+      const cookie = value
+        .replace(/;\s*Domain=[^;]+/gi, "")
+        .replace(/;\s*Path=[^;]+/gi, "; Path=/");
+      output.headers.set("set-cookie", cookie.includes("Path=") ? cookie : `${cookie}; Path=/`);
+      return;
+    }
+    output.headers.set(key, value);
   });
   return output;
 }

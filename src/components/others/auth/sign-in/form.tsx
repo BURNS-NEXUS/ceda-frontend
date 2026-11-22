@@ -20,22 +20,20 @@ import { useRouter } from "@/i18n/navigation";
 import type { DemoRole } from "@/layout/app-layout/sidebar/data";
 import { ApiError, login } from "@/lib/api/client";
 
-const demoAccounts: { role: DemoRole; label: string; email: string; password: string }[] = [
-  { role: "innovator", label: "Innovator portal", email: "innovator@burnz.demo", password: "Demo123!" },
-  { role: "evaluator", label: "Evaluator portal", email: "evaluator@burnz.demo", password: "Demo123!" },
-  { role: "programmeAdmin", label: "Programme admin", email: "admin@burnz.demo", password: "Demo123!" },
-  { role: "adjudicator", label: "Adjudicator workspace", email: "adjudicator@burnz.demo", password: "Demo123!" },
-];
+const seededRoleByEmail: Record<string, DemoRole> = {
+  "innovator@burnz.demo": "innovator",
+  "evaluator@burnz.demo": "evaluator",
+  "admin@burnz.demo": "programmeAdmin",
+  "adjudicator@burnz.demo": "adjudicator",
+};
 
 export default function SignInFormFields() {
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState<DemoRole>("innovator");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const router = useRouter();
 
   const {
     register,
-    setValue,
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
@@ -51,22 +49,12 @@ export default function SignInFormFields() {
 
   const handleFormSubmit = async (data: SignInFormData) => {
     const normalizedEmail = data.email.trim().toLowerCase();
-    const account = demoAccounts.find((candidate) => candidate.email === normalizedEmail);
     setSubmitError(null);
-
-    // Demo mode must remain usable while the remote Django service is HTTP-only
-    // or unavailable from an HTTPS Vercel deployment.
-    if (account && data.password === account.password) {
-      window.localStorage.setItem("burnz-demo-auth", "authenticated");
-      window.localStorage.setItem("burnz-demo-role", account.role);
-      router.push("/");
-      return;
-    }
 
     try {
       await login(normalizedEmail, data.password);
       window.localStorage.setItem("burnz-demo-auth", "authenticated");
-      window.localStorage.setItem("burnz-demo-role", account?.role ?? role);
+      window.localStorage.setItem("burnz-demo-role", seededRoleByEmail[normalizedEmail] ?? "innovator");
     } catch (caught) {
       setSubmitError(
         caught instanceof ApiError && caught.status === 401
@@ -125,16 +113,6 @@ export default function SignInFormFields() {
         </InputGroup>
         <FieldError errors={[errors.password]} />
       </Field>
-
-      <Field>
-        <FieldLabel className="mb-1.5 block">Portal</FieldLabel>
-        <div className="rounded-lg border border-brand-200 bg-brand-50/60 px-3 py-2.5 text-sm font-medium text-brand-700 dark:border-brand-900/50 dark:bg-brand-900/20 dark:text-brand-300">{demoAccounts.find((account) => account.role === role)?.label}</div>
-        <p className="mt-1.5 text-xs text-gray-500">Choose a seeded demo account below. Its role is applied automatically.</p>
-      </Field>
-
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {demoAccounts.map((account) => <button type="button" key={account.role} onClick={() => { setRole(account.role); setValue("email", account.email); setValue("password", account.password); }} className={`rounded-lg border p-3 text-left transition-colors ${role === account.role ? "border-brand-500 bg-brand-50 dark:border-brand-500 dark:bg-brand-900/20" : "border-gray-200 hover:border-brand-300 dark:border-gray-700"}`}><div className="text-xs font-semibold text-gray-800 dark:text-white/90">{account.label}</div><div className="mt-1 text-[11px] text-gray-500">{account.email}</div></button>)}
-      </div>
 
       <div className="flex items-center justify-between">
         <Field orientation="horizontal" className="w-auto items-center gap-3">
