@@ -8,6 +8,8 @@ import { roleLabels } from "@/layout/app-layout/sidebar/data";
 import { useParams } from "next/navigation";
 import RoleDemoWorkspace from "@/components/burnz/role-demo-workspace";
 import EvaluatorReviewQueue from "@/components/burnz/evaluator";
+import ReviewWorkspace from "@/components/burnz/evaluator/review-workspace";
+import ReviewGuidelines from "@/components/burnz/evaluator/review-guidelines";
 import ProfileAndOrganisation from "@/components/burnz/profile";
 import NotificationsScreen from "@/components/burnz/notifications";
 import WorkflowOperations, { workflowPaths } from "@/components/burnz/workflow-operations";
@@ -76,15 +78,17 @@ export default function WorkspaceScreen() {
         <ApplicationWorkspace />
       ) : key === "innovator/programmes" ? <ProgrammeCalls /> : key === "innovator/notifications" ? (
         <NotificationsScreen />
+      ) : key === "evaluator/reviews" ? (
+        <EvaluatorReviewQueue />
+      ) : key === "evaluator/reviews/workspace" ? (
+        <ReviewWorkspace />
+      ) : key === "evaluator/guidelines" ? (
+        <ReviewGuidelines />
       ) : workflowPaths[key] ? (
         <>
           {key === "admin/programmes" && <ProgrammeCalls manage />}
           {key === "admin/screening" && <AdminWorkspace screenKey={key} />}
-          {key === "evaluator/reviews" ? (
-            <EvaluatorReviewQueue />
-          ) : (
-            <WorkflowOperations key={key} paths={workflowPaths[key]} />
-          )}
+          <WorkflowOperations key={key} paths={workflowPaths[key]} />
         </>
       ) : key.startsWith("admin/") ? (
         <AdminWorkspace screenKey={key} />

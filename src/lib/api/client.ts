@@ -8,6 +8,9 @@ import type {
   ApplicationOut,
   ApplicationPatch,
   ApplicationDocumentOut,
+  ApplicationScoreIn,
+  ApplicationScoringOut,
+  ApplicationScoringUpsert,
   AuditLogOut,
   ClaimTaskIn,
   ClarificationFilters,
@@ -48,6 +51,7 @@ import type {
   ReferencePatch,
   RegisterIn,
   RequiredDocumentOut,
+  ScoringCriterionOut,
   ShareholderIn,
   ShareholderOut,
   ShareholderPatch,
@@ -293,6 +297,40 @@ export function setEvaluatorExpertise(userId: string, sectors: string[]) {
   } satisfies ExpertiseIn);
 }
 
+/* -------------------------------- Scoring -------------------------------- */
+
+/** The active rubric published by the programme administrators. */
+export function listScoringCriteria() {
+  return apiFetch<ScoringCriterionOut[]>("/api/scoring-criteria");
+}
+
+/** The signed-in evaluator's own scoring session for an application. */
+export function getMyScoring(applicationId: string) {
+  return apiFetch<ApplicationScoringOut>(
+    `/api/applications/${applicationId}/scorings/me`,
+  );
+}
+
+/** Create or update the evaluator's draft scores. */
+export function saveMyScoring(
+  applicationId: string,
+  payload: ApplicationScoringUpsert,
+) {
+  return mutate<ApplicationScoringOut>(
+    `/api/applications/${applicationId}/scorings/me`,
+    "PUT",
+    payload,
+  );
+}
+
+/** Confirm a complete review. This is irreversible from the evaluator portal. */
+export function confirmMyScoring(applicationId: string) {
+  return mutate<ApplicationScoringOut>(
+    `/api/applications/${applicationId}/scorings/me/confirm`,
+    "POST",
+  );
+}
+
 /* ---------------------- Generic applicant-detail resources ---------------- */
 
 export type ResourceApi<Out, In, Patch> = {
@@ -460,6 +498,12 @@ export const api = {
     claim: claimTask,
     decline: declineTask,
     setExpertise: setEvaluatorExpertise,
+  },
+  scoring: {
+    criteria: listScoringCriteria,
+    mine: getMyScoring,
+    save: saveMyScoring,
+    confirm: confirmMyScoring,
   },
   personalDetails: personalDetailsApi,
   addresses: addressApi,

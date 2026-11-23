@@ -313,6 +313,53 @@ export type DeclineTaskIn = { reason: string };
 export type ExpertiseIn = { sectors: string[] };
 export type ExpertiseOut = { user_id: string; username: string; sectors: string[] };
 
+/* --------------------------------- Scoring -------------------------------- */
+
+export type ScoringCriterionOut = {
+  id: number;
+  name: string;
+  description: string;
+  weight: Money;
+  max_score: Money;
+  score_type: string;
+  is_required: boolean;
+  is_active: boolean;
+  order: number;
+};
+export type ApplicationScoreIn = {
+  criterion_id: number;
+  score: Money;
+  comment?: string;
+};
+export type ApplicationScoreOut = {
+  id: number;
+  criterion_id: number;
+  criterion_name: string;
+  score: Money;
+  comment: string;
+  updated_at: string;
+};
+export type ApplicationScoringOut = {
+  id: number;
+  application_id: string;
+  scorer: { id: string; username: string };
+  status: string;
+  overall_comment: string;
+  evidence_reference: string;
+  no_conflict_declared: boolean;
+  submitted_at: string | null;
+  confirmed_at: string | null;
+  scores: ApplicationScoreOut[];
+  created_at: string;
+  updated_at: string;
+};
+export type ApplicationScoringUpsert = {
+  overall_comment?: string | null;
+  evidence_reference?: string | null;
+  no_conflict_declared?: boolean | null;
+  scores: ApplicationScoreIn[];
+};
+
 /* -------------------------------- Documents ------------------------------- */
 
 export type DocumentTypeOut = {

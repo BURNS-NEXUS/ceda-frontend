@@ -6,15 +6,15 @@ import { useRouter } from "@/i18n/navigation";
 import {
   claimTask,
   declineTask,
-  listMyEvaluationTasks,
   listTaskPool,
-  type TaskOut,
   type TaskPoolItemOut,
 } from "@/lib/api/client";
 import { errorMessage, PanelEmpty, PanelError, PanelSkeleton } from "../ui/async-state";
 import SectionCard from "../ui/section-card";
 import AssignedTaskRow from "./assigned-task-row";
 import PoolTaskRow from "./pool-task-row";
+import type { AssignedReview } from "./types";
+import { loadAssignedReviews } from "./utils";
 
 /**
  * The evaluator's review queue. Evaluations you have claimed appear under
@@ -25,7 +25,7 @@ import PoolTaskRow from "./pool-task-row";
 export default function EvaluatorReviewQueue() {
   const router = useRouter();
   const [pool, setPool] = useState<TaskPoolItemOut[]>([]);
-  const [assigned, setAssigned] = useState<TaskOut[]>([]);
+  const [assigned, setAssigned] = useState<AssignedReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -36,12 +36,12 @@ export default function EvaluatorReviewQueue() {
     setLoading(true);
     setError(null);
     try {
-      const [poolResult, taskResult] = await Promise.all([
+      const [poolResult, assignedResult] = await Promise.all([
         listTaskPool(),
-        listMyEvaluationTasks(),
+        loadAssignedReviews(),
       ]);
       setPool(poolResult.data);
-      setAssigned(taskResult.data.filter((task) => task.status === "assigned"));
+      setAssigned(assignedResult);
     } catch (caught) {
       setError(errorMessage(caught));
     } finally {
@@ -98,12 +98,16 @@ export default function EvaluatorReviewQueue() {
           >
             {assigned.length ? (
               <ul className="space-y-3">
-                {assigned.map((task) => (
+                {assigned.map((review) => (
                   <AssignedTaskRow
-                    key={task.id}
-                    task={task}
-                    busy={busyTask === task.id}
-                    onOpenWorkspace={() => router.push("/evaluator/reviews/workspace")}
+                    key={review.taskId}
+                    review={review}
+                    busy={busyTask === review.taskId}
+                    onOpenWorkspace={(applicationId) =>
+                      router.push(
+                        `/evaluator/reviews/workspace?application=${encodeURIComponent(applicationId)}`,
+                      )
+                    }
                     onDecline={handleDecline}
                   />
                 ))}

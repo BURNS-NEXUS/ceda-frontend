@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 import type { ApplicationDetailOut, ApplicationOut } from "@/lib/api/client";
 import { PanelEmpty, PanelSkeleton } from "../ui/async-state";
 import SectionCard from "../ui/section-card";
+import StatusBadge, { toneForState } from "../ui/status-badge";
 import ApplicantDetails from "./applicant-details";
 import DetailField from "./detail-field";
 import OrganisationEditForm from "./organisation-edit-form";
@@ -38,7 +40,7 @@ export default function OrganisationCard({
   return (
     <SectionCard
       title="Organisation & contact"
-      description="Organisation and contact details recorded on your applications, read live from the Django API."
+      description="Organisation and contact details recorded on your applications. Drafts and applications awaiting feedback can be edited."
       actions={
         detail && editable && !editing ? (
           <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
@@ -51,10 +53,16 @@ export default function OrganisationCard({
         <PanelEmpty message="You have no applications yet, so there are no organisation details to show." />
       ) : (
         <div className="space-y-5">
-          <label className="grid gap-1.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Application
             </span>
+            {detail ? (
+              <StatusBadge label={detail.state} tone={toneForState(detail.state)} />
+            ) : null}
+          </div>
+          <label className="grid gap-1.5">
+            <span className="sr-only">Choose an application</span>
             <select
               value={selectedId ?? ""}
               onChange={(event) => {
@@ -90,6 +98,10 @@ export default function OrganisationCard({
                     label="Applicant type"
                     value={typeLabels[detail.application_type] ?? detail.application_type}
                   />
+                  <DetailField
+                    label="Application status"
+                    value={detail.state.replaceAll("_", " ")}
+                  />
                   <DetailField label="Contact person" value={detail.contact_person} />
                   <DetailField label="Email" value={detail.email} />
                   <DetailField label="Telephone" value={detail.telephone} />
@@ -99,8 +111,15 @@ export default function OrganisationCard({
                   <DetailField label="Business location" value={detail.business_location} />
                 </dl>
                 {!editable ? (
-                  <p className="text-xs text-gray-400 dark:text-gray-500">
-                    Details can only be edited while the application is a draft or awaiting feedback.
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    This application is frozen for assessment. Details can only be edited while
+                    it is a draft or awaiting feedback.{" "}
+                    <Link
+                      href="/innovator/applications"
+                      className={buttonVariants({ variant: "link", size: "xs" })}
+                    >
+                      View your applications
+                    </Link>
                   </p>
                 ) : null}
                 <ApplicantDetails detail={detail} />

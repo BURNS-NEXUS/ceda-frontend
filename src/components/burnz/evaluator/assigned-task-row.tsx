@@ -3,18 +3,18 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { TaskOut } from "@/lib/api/client";
 import StatusBadge from "../ui/status-badge";
+import type { AssignedReview } from "./types";
 
 interface AssignedTaskRowProps {
-  task: TaskOut;
+  review: AssignedReview;
   busy: boolean;
   onOpenWorkspace: (applicationId: string) => void;
   onDecline: (taskId: string, reason: string) => void;
 }
 
 export default function AssignedTaskRow({
-  task,
+  review,
   busy,
   onOpenWorkspace,
   onDecline,
@@ -28,16 +28,16 @@ export default function AssignedTaskRow({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-ink-800 dark:text-white">
-            {task.application_id}
+            {review.title}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Assigned evaluation · {task.assignees.length} reviewer(s)
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {[review.companyNo, review.businessNature].filter(Boolean).join(" · ")}
           </p>
         </div>
-        <StatusBadge label={task.status} tone="info" />
+        <StatusBadge label="claimed by you" tone="info" />
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
-        <Button size="sm" onClick={() => onOpenWorkspace(task.application_id)}>
+        <Button size="sm" onClick={() => onOpenWorkspace(review.applicationId)}>
           Open review workspace
         </Button>
         <Button
@@ -46,7 +46,7 @@ export default function AssignedTaskRow({
           disabled={busy}
           onClick={() => setShowDecline((current) => !current)}
         >
-          {showDecline ? "Cancel" : "Decline assignment"}
+          {showDecline ? "Cancel" : "Decline this review"}
         </Button>
       </div>
       {showDecline ? (
@@ -55,19 +55,19 @@ export default function AssignedTaskRow({
           onSubmit={(event) => {
             event.preventDefault();
             if (!validReason) return;
-            onDecline(task.id, reason.trim());
+            onDecline(review.taskId, reason.trim());
             setShowDecline(false);
             setReason("");
           }}
         >
           <label className="grid gap-1 text-xs text-gray-600 dark:text-gray-300">
-            Reason for declining (at least 10 characters)
+            Why can&apos;t you assess this?
             <Input
               value={reason}
               onChange={(event) => setReason(event.target.value)}
               minLength={10}
               required
-              placeholder="e.g. Conflict of interest with this applicant"
+              placeholder="e.g. I have a conflict of interest with this applicant"
             />
           </label>
           <div className="flex gap-2">
@@ -91,6 +91,9 @@ export default function AssignedTaskRow({
               Cancel
             </Button>
           </div>
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Declining returns this review to the shared pool for another evaluator.
+          </p>
         </form>
       ) : null}
     </li>

@@ -46,9 +46,12 @@ export default function ProfileAndOrganisation({
       if (showOrganisation) {
         const appsResult = await listApplications();
         setApplications(appsResult.data);
-        const firstId = appsResult.data[0]?.id ?? null;
-        setSelectedId(firstId);
-        setDetail(firstId ? await getApplication(firstId) : null);
+        const preferred =
+          appsResult.data.find((app) => ["draft", "feedback"].includes(app.state)) ??
+          appsResult.data[0] ??
+          null;
+        setSelectedId(preferred?.id ?? null);
+        setDetail(preferred ? await getApplication(preferred.id) : null);
       }
     } catch (caught) {
       setError(errorMessage(caught));
