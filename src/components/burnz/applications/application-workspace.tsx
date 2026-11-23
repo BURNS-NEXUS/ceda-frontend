@@ -2,6 +2,17 @@
 
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { TrashBinIcon } from "@/icons";
+import {
+  deleteApplication,
   documentsApi,
   getApplication,
   listApplications,
@@ -30,6 +41,9 @@ export default function ApplicationWorkspace() {
   const [search, setSearch] = useState("");
   const [draftDetail, setDraftDetail] = useState<ApplicationDetailOut | null>(null);
   const [draftDocuments, setDraftDocuments] = useState<RequiredDocumentOut[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState<ApplicationOut | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -71,6 +85,21 @@ export default function ApplicationWorkspace() {
       active = false;
     };
   }, [draftId]);
+
+  const confirmDelete = useCallback(async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteApplication(deleteTarget.id);
+      setDeleteTarget(null);
+      await load();
+    } catch (caught) {
+      setDeleteError(errorMessage(caught));
+    } finally {
+      setDeleting(false);
+    }
+  }, [deleteTarget, load]);
 
   if (view.mode === "new") {
     return (
@@ -200,9 +229,23 @@ export default function ApplicationWorkspace() {
                         <td className="py-3"><StatusBadge label={application.state} tone={toneForState(application.state)} /></td>
                         <td className="py-3 text-gray-600 dark:text-gray-400">{application.loan_amount}</td>
                         <td className="py-3">
-                          <Button variant="ghost" size="sm" onClick={() => setView({ mode: "detail", id: application.id })}>
-                            Open
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => setView({ mode: "detail", id: application.id })}>
+                              Open
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                              aria-label={`Delete ${application.project_title || "application"}`}
+                              onClick={() => {
+                                setDeleteError(null);
+                                setDeleteTarget(application);
+                              }}
+                            >
+                              <TrashBinIcon className="size-4" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -213,6 +256,36 @@ export default function ApplicationWorkspace() {
           </SectionCard>
         </>
       ) : null}
+
+      <Dialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setDeleteTarget(null);
+        }}
+      >
+        <DialogContent showCloseButton={!deleting}>
+          <DialogHeader>
+            <DialogTitle>Delete application?</DialogTitle>
+            <DialogDescription>
+              This permanently removes “{deleteTarget?.project_title || "this application"}” and all of
+              its saved records from Django. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {deleteError ? <PanelError message={deleteError} /> : null}
+          <DialogFooter>
+            <DialogClose
+              render={
+                <Button variant="outline" type="button" disabled={deleting}>
+                  Cancel
+                </Button>
+              }
+            />
+            <Button variant="destructive" disabled={deleting} onClick={() => void confirmDelete()}>
+              {deleting ? "Deleting…" : "Delete application"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

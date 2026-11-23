@@ -18,15 +18,8 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { signInSchema, type SignInFormData } from "./schema";
 import { useRouter } from "@/i18n/navigation";
-import type { DemoRole } from "@/layout/app-layout/sidebar/data";
-import { ApiError, login } from "@/lib/api/client";
-
-const seededRoleByEmail: Record<string, DemoRole> = {
-  "innovator@burnz.demo": "innovator",
-  "evaluator@burnz.demo": "evaluator",
-  "admin@burnz.demo": "programmeAdmin",
-  "adjudicator@burnz.demo": "adjudicator",
-};
+import { ApiError, getMyPermissions, login } from "@/lib/api/client";
+import { roleFromPermissions } from "@/lib/burnz/role-from-permissions";
 
 export default function SignInFormFields() {
   const [showPassword, setShowPassword] = useState(false);
@@ -54,8 +47,14 @@ export default function SignInFormFields() {
 
     try {
       const authenticatedUser = await login(normalizedEmail, data.password);
+      // Resolve the real role from the API's granted permissions so newly
+      // registered customers and seeded staff all land in the right portal.
+      const permissions = await getMyPermissions().catch(() => null);
       window.localStorage.setItem("burnz-demo-auth", "authenticated");
-      window.localStorage.setItem("burnz-demo-role", seededRoleByEmail[normalizedEmail] ?? "innovator");
+      window.localStorage.setItem(
+        "burnz-demo-role",
+        roleFromPermissions(permissions),
+      );
       window.localStorage.setItem("ceda-auth-user", JSON.stringify(authenticatedUser));
     } catch (caught) {
       setSubmitError(

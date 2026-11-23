@@ -17,7 +17,8 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { signUpSchema, type SignUpFormData } from "./schema";
 import { useRouter } from "@/i18n/navigation";
-import { register as registerUser } from "@/lib/api/client";
+import { getMyPermissions, register as registerUser } from "@/lib/api/client";
+import { roleFromPermissions } from "@/lib/burnz/role-from-permissions";
 
 export default function SignUpFormFields() {
   const [showPassword, setShowPassword] = useState(false);
@@ -46,17 +47,25 @@ export default function SignUpFormFields() {
   const handleFormSubmit = async (data: SignUpFormData) => {
     setSubmitError(null);
     try {
-      await registerUser({
+      const createdUser = await registerUser({
         email: data.email.trim().toLowerCase(),
         password: data.password,
         first_name: data.fname,
         last_name: data.lname,
       });
+      // Registration creates a Django session too, so sign the customer in here.
+      const permissions = await getMyPermissions().catch(() => null);
+      window.localStorage.setItem("burnz-demo-auth", "authenticated");
+      window.localStorage.setItem(
+        "burnz-demo-role",
+        roleFromPermissions(permissions),
+      );
+      window.localStorage.setItem("ceda-auth-user", JSON.stringify(createdUser));
     } catch (caught) {
       setSubmitError(errorMessage(caught));
       return;
     }
-    router.replace("/signin");
+    router.replace("/");
   };
 
   return (

@@ -15,8 +15,15 @@ import { errorMessage, PanelError, PanelSkeleton } from "../ui/async-state";
 import AccountCard from "./account-card";
 import OrganisationCard from "./organisation-card";
 
-/** Signed-in identity plus the organisation details recorded on the user's applications. */
-export default function ProfileAndOrganisation() {
+interface ProfileAndOrganisationProps {
+  /** Only innovators/customers have their own applications to show organisation details for. */
+  showOrganisation?: boolean;
+}
+
+/** Signed-in identity, editable for every role, plus organisation details for innovators. */
+export default function ProfileAndOrganisation({
+  showOrganisation = true,
+}: ProfileAndOrganisationProps) {
   const [user, setUser] = useState<UserOut | null>(null);
   const [account, setAccount] = useState<UserPermissionsOut | null>(null);
   const [applications, setApplications] = useState<ApplicationOut[]>([]);
@@ -30,23 +37,25 @@ export default function ProfileAndOrganisation() {
     setLoading(true);
     setError(null);
     try {
-      const [userResult, accountResult, appsResult] = await Promise.all([
+      const [userResult, accountResult] = await Promise.all([
         getCurrentUser(),
         getMyPermissions(),
-        listApplications(),
       ]);
       setUser(userResult);
       setAccount(accountResult);
-      setApplications(appsResult.data);
-      const firstId = appsResult.data[0]?.id ?? null;
-      setSelectedId(firstId);
-      setDetail(firstId ? await getApplication(firstId) : null);
+      if (showOrganisation) {
+        const appsResult = await listApplications();
+        setApplications(appsResult.data);
+        const firstId = appsResult.data[0]?.id ?? null;
+        setSelectedId(firstId);
+        setDetail(firstId ? await getApplication(firstId) : null);
+      }
     } catch (caught) {
       setError(errorMessage(caught));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showOrganisation]);
 
   useEffect(() => {
     void load();
@@ -64,20 +73,40 @@ export default function ProfileAndOrganisation() {
     }
   }, []);
 
+  const handleAccountSaved = useCallback((updated: UserOut) => {
+    setUser(updated);
+    window.localStorage.setItem("ceda-auth-user", JSON.stringify(updated));
+  }, []);
+
+  const handleOrganisationSaved = useCallback(async () => {
+    if (!selectedId) return;
+    setLoadingDetail(true);
+    try {
+      setDetail(await getApplication(selectedId));
+    } catch (caught) {
+      setError(errorMessage(caught));
+    } finally {
+      setLoadingDetail(false);
+    }
+  }, [selectedId]);
+
   if (loading) return <PanelSkeleton rows={4} />;
   if (!user && error) return <PanelError message={error} onRetry={() => void load()} />;
 
   return (
     <div className="space-y-6">
       {error ? <PanelError message={error} /> : null}
-      <AccountCard user={user} permissions={account} />
-      <OrganisationCard
-        applications={applications}
-        selectedId={selectedId}
-        detail={detail}
-        loadingDetail={loadingDetail}
-        onSelect={(id) => void handleSelect(id)}
-      />
+      <AccountCard user={user} permissions={account} onSaved={handleAccountSaved} />
+      {showOrganisation ? (
+        <OrganisationCard
+          applications={applications}
+          selectedId={selectedId}
+          detail={detail}
+          loadingDetail={loadingDetail}
+          onSelect={(id) => void handleSelect(id)}
+          onSaved={() => void handleOrganisationSaved()}
+        />
+      ) : null}
     </div>
   );
 }

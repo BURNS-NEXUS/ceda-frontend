@@ -24,6 +24,12 @@ export type RegisterIn = {
   last_name: string;
 };
 
+export type UserPatchIn = {
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+};
+
 export type LoginIn = { email: string; password: string };
 
 export type UserPermissionsOut = {

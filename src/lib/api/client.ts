@@ -55,6 +55,7 @@ import type {
   TaskPoolOut,
   ExpertiseOut,
   UserOut,
+  UserPatchIn,
   UserPermissionsOut,
 } from "./types";
 
@@ -189,6 +190,10 @@ export function getCurrentUser() {
 
 export function getMyPermissions() {
   return apiFetch<UserPermissionsOut>("/api/me/permissions");
+}
+
+export function updateCurrentUser(payload: UserPatchIn) {
+  return mutate<UserOut>("/api/me", "PATCH", payload);
 }
 
 /* ------------------------------- Applications ----------------------------- */

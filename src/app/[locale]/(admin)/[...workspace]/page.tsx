@@ -18,10 +18,10 @@ const screens: Record<string, { title: string; description: string }> = {
   "innovator/innovations": { title: "My innovations & documents", description: "Manage innovation records and supporting evidence." },
   "innovator/notifications": { title: "Notifications", description: "Track application events and clarification requests." },
   "innovator/profile": { title: "Profile & organisation", description: "Maintain your contact identity and organisation details." },
-  "evaluator/reviews": { title: "Review queue", description: "Applications auto-matched to your expertise, plus a claim pool for pending reviews." },
+  "evaluator/reviews": { title: "Review queue", description: "Claim pending reviews from a shared pool, ranked by your expertise." },
   "evaluator/reviews/workspace": { title: "Review workspace", description: "Inspect a versioned application and score each criterion." },
   "evaluator/guidelines": { title: "Review guidelines", description: "Published rubric, scoring scale and confidentiality guidance." },
-  "evaluator/profile": { title: "Evaluator profile", description: "Manage your evaluator identity and availability." },
+  "evaluator/profile": { title: "Evaluator profile", description: "Manage your evaluator identity and contact details." },
   "admin/applications": { title: "Application registry", description: "Search and filter authorized applications by stage and applicant." },
   "admin/screening": { title: "Screening queue", description: "Check completeness and eligibility, and request clarification." },
   "admin/assignments": { title: "Reviewer assignments", description: "Assign eligible reviewers and monitor capacity." },
@@ -30,10 +30,12 @@ const screens: Record<string, { title: string; description: string }> = {
   "admin/repository": { title: "Innovation repository", description: "Search private, versioned innovation records." },
   "admin/reports": { title: "Reports & analytics", description: "Metrics derived from application records." },
   "admin/audit": { title: "Audit trail", description: "Trace actor, timestamp, action and record." },
+  "admin/profile": { title: "My profile", description: "Manage your administrator identity and contact details." },
   "adjudicator/queue": { title: "Decision queue", description: "Cases ready for adjudication." },
   "adjudicator/comparison": { title: "Score comparison", description: "Compare independent scores and rationale." },
   "adjudicator/decisions": { title: "Decisions", description: "Record an authorized outcome with a reason." },
   "adjudicator/history": { title: "Decision history", description: "Read-only decision events." },
+  "adjudicator/profile": { title: "My profile", description: "Manage your adjudicator identity and contact details." },
 };
 
 export default function WorkspaceScreen() {
@@ -68,11 +70,11 @@ export default function WorkspaceScreen() {
         <p className="mt-2 max-w-3xl text-sm text-gray-500 dark:text-gray-400">{screen.description}</p>
       </div>
 
-      {key === "innovator/applications" || key === "innovator/innovations" ? (
+      {key.endsWith("/profile") ? (
+        <ProfileAndOrganisation showOrganisation={key === "innovator/profile"} />
+      ) : key === "innovator/applications" || key === "innovator/innovations" ? (
         <ApplicationWorkspace />
-      ) : key === "innovator/programmes" ? <ProgrammeCalls /> : key === "innovator/profile" ? (
-        <ProfileAndOrganisation />
-      ) : key === "innovator/notifications" ? (
+      ) : key === "innovator/programmes" ? <ProgrammeCalls /> : key === "innovator/notifications" ? (
         <NotificationsScreen />
       ) : workflowPaths[key] ? (
         <>

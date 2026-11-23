@@ -7,6 +7,7 @@ const ALLOWED_PREFIXES = [
   "api/health",
   "api/programmes",
   "api/auth/",
+  "api/me",
   "api/me/permissions",
   "api/tasks",
   "api/openapi.json",

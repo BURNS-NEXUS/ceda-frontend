@@ -17,10 +17,10 @@ import AssignedTaskRow from "./assigned-task-row";
 import PoolTaskRow from "./pool-task-row";
 
 /**
- * The evaluator's review queue. Auto-assigned work appears under "Assigned to
- * you"; anything still needing a reviewer appears in the claim pool, ranked by
- * the reviewer's declared sector expertise. Declining releases the slot so the
- * task is offered to someone else.
+ * The evaluator's review queue. Evaluations you have claimed appear under
+ * "Assigned to you"; anything still needing a reviewer appears in the shared
+ * claim pool, ranked by your declared sector expertise. Nothing is assigned
+ * automatically, and declining releases the slot back to the shared pool.
  */
 export default function EvaluatorReviewQueue() {
   const router = useRouter();
@@ -94,7 +94,7 @@ export default function EvaluatorReviewQueue() {
         <>
           <SectionCard
             title="Assigned to you"
-            description="Applications auto-matched to your expertise. Open one to score it, or decline if you cannot assess it."
+            description="Evaluations you have claimed from the shared pool. Open one to score it, or decline if you cannot assess it."
           >
             {assigned.length ? (
               <ul className="space-y-3">
