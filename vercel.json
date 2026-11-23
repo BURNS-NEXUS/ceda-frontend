@@ -2,6 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "env": {
-    "BACKEND_API_ORIGIN": "https://ceda-api.bawetsi.com"
+    "BACKEND_API_ORIGIN": "https://ceda-django-api.vercel.app"
   }
 }
