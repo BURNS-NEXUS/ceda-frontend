@@ -66,7 +66,7 @@ const fieldGroups: FieldConfig[][] = [
     { name: "personal_surname", label: "Surname" },
     { name: "personal_other_names", label: "Other names" },
     { name: "personal_id_number", label: "Identity or passport number" },
-    { name: "personal_date_of_birth", label: "Date of birth", type: "date" },
+    { name: "personal_date_of_birth", label: "Date of birth", type: "date", hint: "Required before Django can save this section." },
     { name: "personal_marital_status", label: "Marital status" },
     { name: "postal_address", label: "Postal address", wide: true },
     { name: "physical_address", label: "Physical address", wide: true },
@@ -84,10 +84,10 @@ const fieldGroups: FieldConfig[][] = [
     { name: "project_description", label: "Project description", wide: true },
     { name: "loan_amount_requested", label: "Amount previously requested", type: "number" },
     { name: "name_of_company", label: "Registered company name" },
-    { name: "date_of_incorporation", label: "Date of incorporation", type: "date" },
+    { name: "date_of_incorporation", label: "Date of incorporation", type: "date", hint: "Required before Django can save this section." },
     { name: "nature_of_company", label: "Nature of company" },
     { name: "shareholder_name", label: "Shareholder name" },
-    { name: "shareholder_dob", label: "Shareholder date of birth", type: "date" },
+    { name: "shareholder_dob", label: "Shareholder date of birth", type: "date", hint: "Required when a shareholder is added." },
     { name: "shareholder_nationality", label: "Nationality" },
     { name: "shareholder_id_number", label: "Identity number" },
     { name: "shareholder_position", label: "Position" },
@@ -158,7 +158,6 @@ export default function ApplicationWizard({
 
   const {
     register,
-    handleSubmit,
     getValues,
     reset,
     trigger,
@@ -305,16 +304,28 @@ export default function ApplicationWizard({
     [],
   );
 
-  const persistStep = useCallback(async (values: WizardValues): Promise<boolean> => {
+  const persistStep = useCallback(async (values: WizardValues, reportMissing: boolean): Promise<boolean> => {
     if (!readyRef.current) return false;
+    const skip = (message: string) => {
+      setSaveState("idle");
+      if (reportMissing) setError(message);
+      return false;
+    };
     setSaveState("saving");
     setError(null);
     try {
       let applicationIdToUse = savedId.current;
       if (!applicationIdToUse && !isValidDateValue(values.incorporation_date)) {
-        setSaveState("idle");
-        setError("Add a valid incorporation date before saving this application.");
-        return false;
+        return skip("Add a valid incorporation date before saving this application.");
+      }
+      if (step === 1 && !isValidDateValue(values.personal_date_of_birth)) {
+        return skip("Add a valid date of birth before saving the applicant section.");
+      }
+      if (step === 2 && !isValidDateValue(values.date_of_incorporation)) {
+        return skip("Add a valid company incorporation date before saving the business section.");
+      }
+      if (step === 2 && values.shareholder_name && !isValidDateValue(values.shareholder_dob)) {
+        return skip("Add a valid shareholder date of birth, or clear the shareholder name.");
       }
       if (step === 0) {
         const payload = toApplicationIn(values);
@@ -359,8 +370,8 @@ export default function ApplicationWizard({
     }
   }, [step, programmeCallId, upsert]);
 
-  const saveStep = useCallback((values: WizardValues) => {
-    saveQueue.current = saveQueue.current.then(() => persistStep(values));
+  const saveStep = useCallback((values: WizardValues, reportMissing = false) => {
+    saveQueue.current = saveQueue.current.then(() => persistStep(values, reportMissing));
     return saveQueue.current;
   }, [persistStep]);
 
@@ -369,20 +380,20 @@ export default function ApplicationWizard({
     const subscription = watch(() => {
       window.clearTimeout(timerRef.current);
       timerRef.current = window.setTimeout(() => {
-        void handleSubmit((values) => saveStep(values))();
+        void saveStep(getValues());
       }, 900);
     });
     return () => {
       subscription.unsubscribe();
       window.clearTimeout(timerRef.current);
     };
-  }, [watch, handleSubmit, saveStep]);
+  }, [watch, getValues, saveStep]);
 
   const goNext = async () => {
     const valid = await trigger(stepFields[step], { shouldFocus: true });
     if (!valid) return;
     window.clearTimeout(timerRef.current);
-    const saved = await saveStep(getValues());
+    const saved = await saveStep(getValues(), true);
     if (saved) setStep((current) => Math.min(current + 1, steps.length - 1));
   };
 
@@ -541,7 +552,7 @@ export default function ApplicationWizard({
                 variant="outline"
                 size="sm"
                 disabled={busy}
-                onClick={() => void handleSubmit((values) => saveStep(values))()}
+                onClick={() => void saveStep(getValues(), true)}
               >
                 {saveState === "saving" ? "Saving…" : "Save draft"}
               </Button>
