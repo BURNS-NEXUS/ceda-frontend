@@ -28,7 +28,6 @@ export const workflowPaths: Record<string, string[]> = {
   "adjudicator/comparison": [app + "/scoring-summary", app + "/scorings", app + "/scorings/{scoring_id}"],
   "adjudicator/decisions": [app + "/adjudication", app + "/adjudication/confirm"],
   "adjudicator/history": ["/api/audit-logs/"],
-  "innovator/notifications": ["/api/clarifications/", "/api/applications/", app + "/wf/resubmit"],
   "evaluator/profile": ["/api/auth/me","/api/absentees","/api/absentees/{absentee_id}"],
 };
 

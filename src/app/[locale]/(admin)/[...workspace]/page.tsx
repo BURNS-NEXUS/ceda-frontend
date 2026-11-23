@@ -9,6 +9,7 @@ import { useParams } from "next/navigation";
 import RoleDemoWorkspace from "@/components/burnz/role-demo-workspace";
 import EvaluatorReviewQueue from "@/components/burnz/evaluator";
 import ProfileAndOrganisation from "@/components/burnz/profile";
+import NotificationsScreen from "@/components/burnz/notifications";
 import WorkflowOperations, { workflowPaths } from "@/components/burnz/workflow-operations";
 
 const screens: Record<string, { title: string; description: string }> = {
@@ -71,6 +72,8 @@ export default function WorkspaceScreen() {
         <ApplicationWorkspace />
       ) : key === "innovator/programmes" ? <ProgrammeCalls /> : key === "innovator/profile" ? (
         <ProfileAndOrganisation />
+      ) : key === "innovator/notifications" ? (
+        <NotificationsScreen />
       ) : workflowPaths[key] ? (
         <>
           {key === "admin/programmes" && <ProgrammeCalls manage />}
