@@ -253,13 +253,13 @@ export type ApplicationDetailOut = ApplicationOut & {
 export type ClarificationFilters = {
   skip?: number;
   take?: number | null;
-  application_id?: number | null;
+  application_id?: string | null;
   version?: number | null;
 };
 export type ClarificationOut = {
   id: string;
   created_by: string | null;
-  application_id: number;
+  application_id: string;
   version: number;
   reason: string;
   response: string | null;
