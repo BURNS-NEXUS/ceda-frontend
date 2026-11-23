@@ -65,7 +65,17 @@ export class ApiError extends Error {
   details: unknown;
 
   constructor(status: number, details: unknown) {
-    super(`API request failed (${status})`);
+    const messages: Record<number, string> = {
+      401: "Please sign in to continue (401).",
+      403: "The server denied this request (403).",
+      404: "The requested resource could not be found (404).",
+      422: "The server could not validate the submitted fields (422).",
+      500: "The API encountered an internal error (500).",
+      502: "The portal gateway could not get a valid response from the API (502).",
+      503: "The service is temporarily unavailable (503).",
+      504: "The gateway timed out waiting for the API (504).",
+    };
+    super(messages[status] ?? `API request failed (${status})`);
     this.name = "ApiError";
     this.status = status;
     this.details = details;

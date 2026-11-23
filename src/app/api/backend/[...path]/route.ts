@@ -54,7 +54,14 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
   // Follow Django's APPEND_SLASH etc. on the backend origin. Passing those
   // redirects through would leak a Location like /api/applications/ into the
   // browser, where /api/backend is missing and the session cookie is wrong.
-  const response = await fetch(target, { method: request.method, headers, body, redirect: "follow", cache: "no-store" });
+  let response: Response;
+  try {
+    response = await fetch(target, { method: request.method, headers, body, redirect: "follow", cache: "no-store" });
+  } catch {
+    return NextResponse.json({ detail: "The portal could not reach the Django API (502)." }, {
+      status: 502, headers: { "Cache-Control": "private, no-store" },
+    });
+  }
   const output = new NextResponse(response.body, { status: response.status, statusText: response.statusText });
   response.headers.forEach((value, key) => {
     const lowerKey = key.toLowerCase();

@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/components/burnz/ui/async-state";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
@@ -51,8 +52,8 @@ export default function SignUpFormFields() {
         first_name: data.fname,
         last_name: data.lname,
       });
-    } catch {
-      setSubmitError("We could not create the account. Check your details and try again, or contact the programme administrator.");
+    } catch (caught) {
+      setSubmitError(errorMessage(caught));
       return;
     }
     router.replace("/signin");

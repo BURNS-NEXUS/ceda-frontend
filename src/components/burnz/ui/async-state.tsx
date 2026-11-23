@@ -50,6 +50,14 @@ export function errorMessage(error: unknown): string {
     const details = (error as { details?: unknown }).details;
     if (details && typeof details === "object") {
       const record = details as Record<string, unknown>;
+      if (Array.isArray(record.detail)) {
+        const issues = record.detail.flatMap((issue: { loc?: unknown; msg?: unknown } | null) => {
+          if (typeof issue?.msg !== "string") return [];
+          const field = Array.isArray(issue.loc) ? issue.loc.filter(part => part !== "body" && part !== "payload").join(".") : "";
+          return [field ? `${field}: ${issue.msg}` : issue.msg];
+        });
+        if (issues.length) return issues.join(" · ");
+      }
       const first = Object.values(record)[0];
       if (typeof first === "string") return first;
       if (Array.isArray(first) && typeof first[0] === "string") return first[0];

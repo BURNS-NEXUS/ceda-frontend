@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/components/burnz/ui/async-state";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
@@ -60,7 +61,7 @@ export default function SignInFormFields() {
       setSubmitError(
         caught instanceof ApiError && caught.status === 401
           ? "The email or password is incorrect."
-          : "The backend is unavailable. Check the connection and try again.",
+          : errorMessage(caught),
       );
       return;
     }
