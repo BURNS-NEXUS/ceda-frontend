@@ -14,7 +14,6 @@ const tasks = "/api/tasks/";
 const reports = "/api/reports/";
 const criteria = "/api/scoring-criteria";
 const assignments = [tasks, "/api/tasks/{task_id}/assignees", "/api/tasks/{task_id}/conflict-declarations", "/api/tasks/supervisors", "/api/tasks/supervisors/{user_id}", "/api/absentees", "/api/absentees/{absentee_id}"];
-export const applicantRecordPaths = ["personal-details","address","contact","employment","corporate-details","shareholders","references","commercial-bankers","next-of-kin","loans"].flatMap(resource => ["/api/"+resource,"/api/"+resource+"/{record_id}"]);
 export const workflowPaths: Record<string, string[]> = {
   "admin/assignments": assignments,
   "admin/programmes": ["/api/settings", criteria, criteria + "/{criterion_id}", "/api/document-types", "/api/document-types/{document_type_id}"],
@@ -30,7 +29,6 @@ export const workflowPaths: Record<string, string[]> = {
   "adjudicator/decisions": [app + "/adjudication", app + "/adjudication/confirm"],
   "adjudicator/history": ["/api/audit-logs/"],
   "innovator/notifications": ["/api/clarifications/", "/api/applications/", app + "/wf/resubmit"],
-  "innovator/profile": applicantRecordPaths,
   "evaluator/profile": ["/api/auth/me","/api/absentees","/api/absentees/{absentee_id}"],
 };
 
