@@ -72,8 +72,11 @@ export default function WorkspaceScreen() {
         <>
           {key === "admin/programmes" && <ProgrammeCalls manage />}
           {key === "admin/screening" && <AdminWorkspace screenKey={key} />}
-          {key === "evaluator/reviews" && <EvaluatorReviewQueue />}
-          <WorkflowOperations key={key} paths={workflowPaths[key]} />
+          {key === "evaluator/reviews" ? (
+            <EvaluatorReviewQueue />
+          ) : (
+            <WorkflowOperations key={key} paths={workflowPaths[key]} />
+          )}
         </>
       ) : key.startsWith("admin/") ? (
         <AdminWorkspace screenKey={key} />
