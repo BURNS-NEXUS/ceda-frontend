@@ -105,27 +105,41 @@ export type PersonalDetailsFields = {
   date_of_birth: string;
   marital_status: string;
 };
-export type PersonalDetailsOut = PersonalDetailsFields & { application_id: string } & RecordMeta;
-export type PersonalDetailsIn = PersonalDetailsFields & { application_id: string };
-export type PersonalDetailsPatch = { application_id: string } & NullablePartial<PersonalDetailsFields>;
+export type PersonalDetailsOut = PersonalDetailsFields & {
+  application_id: string;
+} & RecordMeta;
+export type PersonalDetailsIn = PersonalDetailsFields & {
+  application_id: string;
+};
+export type PersonalDetailsPatch = {
+  application_id: string;
+} & NullablePartial<PersonalDetailsFields>;
 
 export type AddressFields = {
   postal_address: string;
   physical_address: string;
   duration_of_stay: string;
 };
-export type AddressOut = AddressFields & { application_id: string } & RecordMeta;
+export type AddressOut = AddressFields & {
+  application_id: string;
+} & RecordMeta;
 export type AddressIn = AddressFields & { application_id: string };
-export type AddressPatch = { application_id: string } & NullablePartial<AddressFields>;
+export type AddressPatch = {
+  application_id: string;
+} & NullablePartial<AddressFields>;
 
 export type ContactFields = {
   contact_type: string;
   contact_value: string;
   email: string;
 };
-export type ContactOut = ContactFields & { application_id: string } & RecordMeta;
+export type ContactOut = ContactFields & {
+  application_id: string;
+} & RecordMeta;
 export type ContactIn = ContactFields & { application_id: string };
-export type ContactPatch = { application_id: string } & NullablePartial<ContactFields>;
+export type ContactPatch = {
+  application_id: string;
+} & NullablePartial<ContactFields>;
 
 export type EmploymentFields = {
   employer_name: string;
@@ -137,18 +151,28 @@ export type EmploymentFields = {
   ever_applied_for_loan: boolean;
   loan_amount_requested: Money;
 };
-export type EmploymentOut = EmploymentFields & { application_id: string } & RecordMeta;
+export type EmploymentOut = EmploymentFields & {
+  application_id: string;
+} & RecordMeta;
 export type EmploymentIn = EmploymentFields & { application_id: string };
-export type EmploymentPatch = { application_id: string } & NullablePartial<EmploymentFields>;
+export type EmploymentPatch = {
+  application_id: string;
+} & NullablePartial<EmploymentFields>;
 
 export type CorporateDetailsFields = {
   name_of_company: string;
   date_of_incorporation: string;
   nature_of_company: string;
 };
-export type CorporateDetailsOut = CorporateDetailsFields & { application_id: string } & RecordMeta;
-export type CorporateDetailsIn = CorporateDetailsFields & { application_id: string };
-export type CorporateDetailsPatch = { application_id: string } & NullablePartial<CorporateDetailsFields>;
+export type CorporateDetailsOut = CorporateDetailsFields & {
+  application_id: string;
+} & RecordMeta;
+export type CorporateDetailsIn = CorporateDetailsFields & {
+  application_id: string;
+};
+export type CorporateDetailsPatch = {
+  application_id: string;
+} & NullablePartial<CorporateDetailsFields>;
 
 export type ShareholderFields = {
   company_id: string;
@@ -160,18 +184,26 @@ export type ShareholderFields = {
   total_authorized_share_capital: Money;
   total_issued_share_capital: Money;
 };
-export type ShareholderOut = ShareholderFields & { application_id: string } & RecordMeta;
+export type ShareholderOut = ShareholderFields & {
+  application_id: string;
+} & RecordMeta;
 export type ShareholderIn = ShareholderFields & { application_id: string };
-export type ShareholderPatch = { application_id: string } & NullablePartial<ShareholderFields>;
+export type ShareholderPatch = {
+  application_id: string;
+} & NullablePartial<ShareholderFields>;
 
 export type ReferenceFields = {
   name: string;
   postal_address: string;
   cell_phone: string;
 };
-export type ReferenceOut = ReferenceFields & { application_id: string } & RecordMeta;
+export type ReferenceOut = ReferenceFields & {
+  application_id: string;
+} & RecordMeta;
 export type ReferenceIn = ReferenceFields & { application_id: string };
-export type ReferencePatch = { application_id: string } & NullablePartial<ReferenceFields>;
+export type ReferencePatch = {
+  application_id: string;
+} & NullablePartial<ReferenceFields>;
 
 export type CommercialBankerFields = {
   bank_name: string;
@@ -185,9 +217,15 @@ export type CommercialBankerFields = {
   contact_person_address: string;
   contact_person_cell_phone: string;
 };
-export type CommercialBankerOut = CommercialBankerFields & { application_id: string } & RecordMeta;
-export type CommercialBankerIn = CommercialBankerFields & { application_id: string };
-export type CommercialBankerPatch = { application_id: string } & NullablePartial<CommercialBankerFields>;
+export type CommercialBankerOut = CommercialBankerFields & {
+  application_id: string;
+} & RecordMeta;
+export type CommercialBankerIn = CommercialBankerFields & {
+  application_id: string;
+};
+export type CommercialBankerPatch = {
+  application_id: string;
+} & NullablePartial<CommercialBankerFields>;
 
 export type NextOfKinFields = {
   name: string;
@@ -197,9 +235,13 @@ export type NextOfKinFields = {
   physical_address: string;
   cell_phone: string;
 };
-export type NextOfKinOut = NextOfKinFields & { application_id: string } & RecordMeta;
+export type NextOfKinOut = NextOfKinFields & {
+  application_id: string;
+} & RecordMeta;
 export type NextOfKinIn = NextOfKinFields & { application_id: string };
-export type NextOfKinPatch = { application_id: string } & NullablePartial<NextOfKinFields>;
+export type NextOfKinPatch = {
+  application_id: string;
+} & NullablePartial<NextOfKinFields>;
 
 export type LoanFields = {
   institution_name: string;
@@ -212,7 +254,9 @@ export type LoanFields = {
 };
 export type LoanOut = LoanFields & { application_id: string } & RecordMeta;
 export type LoanIn = LoanFields & { application_id: string };
-export type LoanPatch = { application_id: string } & NullablePartial<LoanFields>;
+export type LoanPatch = {
+  application_id: string;
+} & NullablePartial<LoanFields>;
 
 /* --------------------------- Application detail --------------------------- */
 
@@ -274,6 +318,7 @@ export type ClarificationOut = {
 export type AuditLogOut = {
   id: string;
   actor_id: string | null;
+  actor_username: string | null;
   action: string;
   resource_type: string;
   resource_id: string;
@@ -311,7 +356,11 @@ export type TaskPoolOut = ListOut<TaskPoolItemOut>;
 export type ClaimTaskIn = { reason?: string };
 export type DeclineTaskIn = { reason: string };
 export type ExpertiseIn = { sectors: string[] };
-export type ExpertiseOut = { user_id: string; username: string; sectors: string[] };
+export type ExpertiseOut = {
+  user_id: string;
+  username: string;
+  sectors: string[];
+};
 
 /* --------------------------------- Scoring -------------------------------- */
 
@@ -360,6 +409,50 @@ export type ApplicationScoringUpsert = {
   scores: ApplicationScoreIn[];
 };
 
+/** A reviewer's total for one scoring session, used in the comparison view. */
+export type ScorerTotalOut = {
+  scorer_id: string;
+  username: string;
+  status: string;
+  total_raw: Money;
+  total_weighted: Money;
+};
+
+/** The mean score for one criterion across the confirmed reviews. */
+export type CriterionMeanOut = {
+  criterion_id: number;
+  name: string;
+  mean_score: Money | null;
+  weight: Money;
+};
+
+/** Read-only comparison of the confirmed evaluator reviews. */
+export type ApplicationScoringSummary = {
+  application_id: string;
+  scorers: ScorerTotalOut[];
+  criteria: CriterionMeanOut[];
+  overall_weighted_mean: Money | null;
+};
+
+/** The adjudicator's recorded decision for an application. */
+export type ApplicationAdjudicationOut = {
+  id: number;
+  application_id: string;
+  adjudicator: { id: string; username: string };
+  final_score: Money | null;
+  comment: string;
+  status: string;
+  scores: ApplicationScoreOut[];
+  confirmed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ApplicationAdjudicationIn = {
+  scores: ApplicationScoreIn[];
+  comment?: string | null;
+};
+
 /* -------------------------------- Documents ------------------------------- */
 
 export type DocumentTypeOut = {
@@ -403,3 +496,77 @@ export type RequiredDocumentOut = DocumentTypeOut & {
   status?: string | null;
 };
 export type DeleteResult = { success: boolean };
+
+/* -------------------------- Assignment + reporting ------------------------ */
+
+/** A reviewer who can be assigned work, resolved by the Django task service. */
+export type AssignableEmployeeOut = {
+  user_id: string;
+  username: string;
+  email: string;
+  expertise_sectors: string[];
+};
+
+export type ReportFilters = {
+  date_from?: string | null;
+  date_to?: string | null;
+  search?: string | null;
+  status_in?: string[] | null;
+  status_not_in?: string[] | null;
+};
+
+export type DashboardKpisOut = {
+  total_applications: number;
+  submitted_applications: number;
+  accepted: number;
+  rejected: number;
+  conversion_rate_percent: number;
+  stalled_applications: number;
+  overdue_tasks: number;
+};
+
+export type PipelineReportOut = {
+  total: number;
+  by_state: Record<string, number>;
+  funnel: { state: string; count: number }[];
+};
+
+export type StatusBreakdownRowOut = { status: string; count: number };
+
+export type ProcessingTimeReportOut = {
+  terminal_count: number;
+  average_cycle_days: number;
+  by_state: { state: string; count: number }[];
+};
+
+export type ReviewerWorkloadRowOut = {
+  employee_id: string;
+  username: string;
+  assigned: number;
+  completed_tasks: number;
+};
+
+export type ScoringSummaryReportOut = {
+  applications: number;
+  accepted: number;
+  rejected: number;
+  pending_review: number;
+  adjudication_count: number;
+  average_final_score: number | null;
+};
+
+export type StalledApplicationOut = {
+  id: string;
+  project_title: string;
+  state: string;
+  updated_at: string;
+};
+
+export type ReportAuditEntryOut = {
+  id: string;
+  actor_id: string | null;
+  action: string;
+  resource_type: string;
+  resource_id: string;
+  created_at: string;
+};

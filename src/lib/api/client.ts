@@ -1,6 +1,7 @@
 import type {
   AddressIn,
   AddressOut,
+  AssignableEmployeeOut,
   AddressPatch,
   ApplicationDetailOut,
   ApplicationFilters,
@@ -11,9 +12,13 @@ import type {
   ApplicationScoreIn,
   ApplicationScoringOut,
   ApplicationScoringUpsert,
+  ApplicationScoringSummary,
+  ApplicationAdjudicationIn,
+  ApplicationAdjudicationOut,
   AuditLogOut,
   ClaimTaskIn,
   ClarificationFilters,
+  DashboardKpisOut,
   DeclineTaskIn,
   ExpertiseIn,
   ClarificationOut,
@@ -32,6 +37,14 @@ import type {
   DocumentTypeOut,
   DocumentTypePatch,
   EmploymentIn,
+  PipelineReportOut,
+  ProcessingTimeReportOut,
+  ReportAuditEntryOut,
+  ReportFilters,
+  ReviewerWorkloadRowOut,
+  ScoringSummaryReportOut,
+  StalledApplicationOut,
+  StatusBreakdownRowOut,
   EmploymentOut,
   EmploymentPatch,
   FeedbackApplicationIn,
@@ -107,7 +120,10 @@ function buildQuery(params: Record<string, unknown> = {}): string {
   return encoded ? `?${encoded}` : "";
 }
 
-export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function apiFetch<T>(
+  path: string,
+  init: RequestInit = {},
+): Promise<T> {
   const headers = new Headers(init.headers);
   const isForm =
     typeof FormData !== "undefined" && init.body instanceof FormData;
@@ -181,7 +197,10 @@ export function register(payload: RegisterIn) {
 }
 
 export function login(email: string, password: string) {
-  return mutate<UserOut>("/api/auth/login", "POST", { email, password } satisfies LoginIn);
+  return mutate<UserOut>("/api/auth/login", "POST", {
+    email,
+    password,
+  } satisfies LoginIn);
 }
 
 export function logout() {
@@ -216,20 +235,36 @@ export function getApplication(applicationId: string) {
   return apiFetch<ApplicationDetailOut>(`/api/applications/${applicationId}`);
 }
 
-export function updateApplication(applicationId: string, payload: ApplicationPatch) {
-  return mutate<ApplicationOut>(`/api/applications/${applicationId}`, "PATCH", payload);
+export function updateApplication(
+  applicationId: string,
+  payload: ApplicationPatch,
+) {
+  return mutate<ApplicationOut>(
+    `/api/applications/${applicationId}`,
+    "PATCH",
+    payload,
+  );
 }
 
 export function deleteApplication(applicationId: string) {
-  return mutate<Record<string, unknown>>(`/api/applications/${applicationId}`, "DELETE");
+  return mutate<Record<string, unknown>>(
+    `/api/applications/${applicationId}`,
+    "DELETE",
+  );
 }
 
 export function submitApplication(applicationId: string) {
-  return mutate<ApplicationOut>(`/api/applications/${applicationId}/wf/submit`, "POST");
+  return mutate<ApplicationOut>(
+    `/api/applications/${applicationId}/wf/submit`,
+    "POST",
+  );
 }
 
 export function resubmitApplication(applicationId: string) {
-  return mutate<ApplicationOut>(`/api/applications/${applicationId}/wf/resubmit`, "POST");
+  return mutate<ApplicationOut>(
+    `/api/applications/${applicationId}/wf/resubmit`,
+    "POST",
+  );
 }
 
 export function requestClarification(applicationId: string, reason: string) {
@@ -237,6 +272,14 @@ export function requestClarification(applicationId: string, reason: string) {
     `/api/applications/${applicationId}/wf/feedback`,
     "POST",
     { reason } satisfies FeedbackApplicationIn,
+  );
+}
+
+/** Screening decision: verify a submitted application and open its evaluation work. */
+export function verifyApplication(applicationId: string) {
+  return mutate<ApplicationOut>(
+    `/api/applications/${applicationId}/wf/verify`,
+    "POST",
   );
 }
 
@@ -256,21 +299,32 @@ export function listAuditLogs(options: { skip?: number; take?: number } = {}) {
 
 /** Not part of the confirmed OpenAPI contract — retained for the demo workflow. */
 export function respondToClarification(id: string, response: string) {
-  return mutate<Record<string, unknown>>(`/api/clarifications/${id}/respond`, "POST", {
-    response,
-  });
+  return mutate<Record<string, unknown>>(
+    `/api/clarifications/${id}/respond`,
+    "POST",
+    {
+      response,
+    },
+  );
 }
 
 /* --------------------------- Tasks & claim pool ---------------------------- */
 
 /** Tasks of a given type visible to the signed-in user. */
-export function listTasks(taskType: "evaluation" | "verification" | "adjudication") {
+export function listTasks(
+  taskType: "evaluation" | "verification" | "adjudication",
+) {
   return apiFetch<ListOut<TaskOut>>(`/api/tasks/?task_type=${taskType}`);
 }
 
 /** Evaluation tasks currently assigned to the signed-in reviewer. */
 export function listMyEvaluationTasks() {
   return listTasks("evaluation");
+}
+
+/** Adjudication tasks assigned to the signed-in adjudicator. */
+export function listMyAdjudicationTasks() {
+  return listTasks("adjudication");
 }
 
 /** Pending evaluation tasks the reviewer may claim, ranked by expertise. */
@@ -292,9 +346,82 @@ export function declineTask(taskId: string, reason: string) {
 
 /** Admin-only: set the sectors an evaluator is comfortable assessing. */
 export function setEvaluatorExpertise(userId: string, sectors: string[]) {
-  return mutate<ExpertiseOut>(`/api/tasks/evaluators/${userId}/expertise`, "PATCH", {
-    sectors,
-  } satisfies ExpertiseIn);
+  return mutate<ExpertiseOut>(
+    `/api/tasks/evaluators/${userId}/expertise`,
+    "PATCH",
+    {
+      sectors,
+    } satisfies ExpertiseIn,
+  );
+}
+
+/** Real, eligible employees for an assignment, resolved by the task service. */
+export function listAssignableEmployees(
+  taskType: "verification" | "evaluation" | "adjudication",
+) {
+  return apiFetch<AssignableEmployeeOut[]>(
+    `/api/tasks/assignable${buildQuery({ task_type: taskType })}`,
+  );
+}
+
+/** Assign one eligible employee to a pending task. */
+export function assignTask(taskId: string, userId: string) {
+  return mutate<TaskOut>(`/api/tasks/${taskId}/assignees`, "POST", {
+    user_id: userId,
+  });
+}
+
+/* -------------------------------- Reporting ------------------------------- */
+
+export function getDashboardReport(filters: ReportFilters = {}) {
+  return apiFetch<DashboardKpisOut>(
+    `/api/reports/dashboard${buildQuery(filters as Record<string, unknown>)}`,
+  );
+}
+
+export function getPipelineReport(filters: ReportFilters = {}) {
+  return apiFetch<PipelineReportOut>(
+    `/api/reports/pipeline${buildQuery(filters as Record<string, unknown>)}`,
+  );
+}
+
+export function getStatusBreakdownReport(filters: ReportFilters = {}) {
+  return apiFetch<StatusBreakdownRowOut[]>(
+    `/api/reports/status-breakdown${buildQuery(filters as Record<string, unknown>)}`,
+  );
+}
+
+export function getProcessingTimeReport(filters: ReportFilters = {}) {
+  return apiFetch<ProcessingTimeReportOut>(
+    `/api/reports/processing-time${buildQuery(filters as Record<string, unknown>)}`,
+  );
+}
+
+export function getReviewerWorkloadReport() {
+  return apiFetch<ReviewerWorkloadRowOut[]>("/api/reports/reviewer-workload");
+}
+
+export function getScoringSummaryReport(filters: ReportFilters = {}) {
+  return apiFetch<ScoringSummaryReportOut>(
+    `/api/reports/scoring-summary${buildQuery(filters as Record<string, unknown>)}`,
+  );
+}
+
+export function getStalledReport(days = 7, filters: ReportFilters = {}) {
+  return apiFetch<StalledApplicationOut[]>(
+    `/api/reports/stalled${buildQuery({ days, ...filters } as Record<string, unknown>)}`,
+  );
+}
+
+export function getReportAuditTrail(limit = 100) {
+  return apiFetch<ReportAuditEntryOut[]>(
+    `/api/reports/audit-trail${buildQuery({ limit })}`,
+  );
+}
+
+/** Same-origin URL for the Django CSV download. */
+export function reportsExportUrl(filters: ReportFilters = {}): string {
+  return `/api/backend/api/reports/export${buildQuery({ format: "csv", ...filters } as Record<string, unknown>)}`;
 }
 
 /* -------------------------------- Scoring -------------------------------- */
@@ -331,6 +458,52 @@ export function confirmMyScoring(applicationId: string) {
   );
 }
 
+/** Every review session recorded for an application (adjudicators see all). */
+export function listApplicationScorings(applicationId: string) {
+  return apiFetch<ApplicationScoringOut[]>(
+    `/api/applications/${applicationId}/scorings`,
+  );
+}
+
+/** Confirmed-review comparison: per-scorer totals, criterion means and overall mean. */
+export function getApplicationScoringSummary(
+  applicationId: string,
+  includeDrafts = false,
+) {
+  return apiFetch<ApplicationScoringSummary>(
+    `/api/applications/${applicationId}/scoring-summary${buildQuery({
+      include_drafts: includeDrafts,
+    })}`,
+  );
+}
+
+/** The adjudicator's decision record for one application (404 until first saved). */
+export function getApplicationAdjudication(applicationId: string) {
+  return apiFetch<ApplicationAdjudicationOut>(
+    `/api/applications/${applicationId}/adjudication`,
+  );
+}
+
+/** Save draft adjudication scores. Omitted criteria are removed server-side. */
+export function saveApplicationAdjudication(
+  applicationId: string,
+  payload: ApplicationAdjudicationIn,
+) {
+  return mutate<ApplicationAdjudicationOut>(
+    `/api/applications/${applicationId}/adjudication`,
+    "PUT",
+    payload,
+  );
+}
+
+/** Confirm the adjudication. This is final and moves the application on. */
+export function confirmApplicationAdjudication(applicationId: string) {
+  return mutate<ApplicationAdjudicationOut>(
+    `/api/applications/${applicationId}/adjudication/confirm`,
+    "POST",
+  );
+}
+
 /* ---------------------- Generic applicant-detail resources ---------------- */
 
 export type ResourceApi<Out, In, Patch> = {
@@ -341,13 +514,18 @@ export type ResourceApi<Out, In, Patch> = {
   remove: (recordId: string) => Promise<DeleteResult>;
 };
 
-function createResourceApi<Out, In, Patch>(path: string): ResourceApi<Out, In, Patch> {
+function createResourceApi<Out, In, Patch>(
+  path: string,
+): ResourceApi<Out, In, Patch> {
   return {
     list: (applicationId) =>
-      apiFetch<ListOut<Out>>(`${path}${buildQuery({ application_id: applicationId })}`),
+      apiFetch<ListOut<Out>>(
+        `${path}${buildQuery({ application_id: applicationId })}`,
+      ),
     get: (recordId) => apiFetch<Out>(`${path}/${recordId}`),
     create: (payload) => mutate<Out>(path, "POST", payload),
-    update: (recordId, payload) => mutate<Out>(`${path}/${recordId}`, "PATCH", payload),
+    update: (recordId, payload) =>
+      mutate<Out>(`${path}/${recordId}`, "PATCH", payload),
     remove: (recordId) => mutate<DeleteResult>(`${path}/${recordId}`, "DELETE"),
   };
 }
@@ -357,12 +535,16 @@ export const personalDetailsApi = createResourceApi<
   PersonalDetailsIn,
   PersonalDetailsPatch
 >("/api/personal-details");
-export const addressApi = createResourceApi<AddressOut, AddressIn, AddressPatch>(
-  "/api/address",
-);
-export const contactApi = createResourceApi<ContactOut, ContactIn, ContactPatch>(
-  "/api/contact",
-);
+export const addressApi = createResourceApi<
+  AddressOut,
+  AddressIn,
+  AddressPatch
+>("/api/address");
+export const contactApi = createResourceApi<
+  ContactOut,
+  ContactIn,
+  ContactPatch
+>("/api/contact");
 export const employmentApi = createResourceApi<
   EmploymentOut,
   EmploymentIn,
@@ -378,9 +560,11 @@ export const shareholderApi = createResourceApi<
   ShareholderIn,
   ShareholderPatch
 >("/api/shareholders");
-export const referenceApi = createResourceApi<ReferenceOut, ReferenceIn, ReferencePatch>(
-  "/api/references",
-);
+export const referenceApi = createResourceApi<
+  ReferenceOut,
+  ReferenceIn,
+  ReferencePatch
+>("/api/references");
 export const commercialBankerApi = createResourceApi<
   CommercialBankerOut,
   CommercialBankerIn,
@@ -391,7 +575,9 @@ export const nextOfKinApi = createResourceApi<
   NextOfKinIn,
   NextOfKinPatch
 >("/api/next-of-kin");
-export const loanApi = createResourceApi<LoanOut, LoanIn, LoanPatch>("/api/loans");
+export const loanApi = createResourceApi<LoanOut, LoanIn, LoanPatch>(
+  "/api/loans",
+);
 
 /* -------------------------------- Documents -------------------------------- */
 
@@ -405,7 +591,11 @@ export const documentTypesApi = {
   create: (payload: DocumentTypeIn) =>
     mutate<DocumentTypeOut>("/api/document-types", "POST", payload),
   update: (documentTypeId: string, payload: DocumentTypePatch) =>
-    mutate<DocumentTypeOut>(`/api/document-types/${documentTypeId}`, "PATCH", payload),
+    mutate<DocumentTypeOut>(
+      `/api/document-types/${documentTypeId}`,
+      "PATCH",
+      payload,
+    ),
   delete: (documentTypeId: string) =>
     mutate<DeleteResult>(`/api/document-types/${documentTypeId}`, "DELETE"),
 };
@@ -425,7 +615,11 @@ export const documentsApi = {
     ),
   upload: (
     applicationId: string,
-    payload: { file: File; document_type_id: string; file_description?: string },
+    payload: {
+      file: File;
+      document_type_id: string;
+      file_description?: string;
+    },
   ) => {
     const form = new FormData();
     form.append("file", payload.file);
@@ -489,21 +683,44 @@ export const api = {
     submit: submitApplication,
     resubmit: resubmitApplication,
     feedback: requestClarification,
+    verify: verifyApplication,
   },
   clarifications: { list: listClarifications },
   audit: { list: listAuditLogs },
   tasks: {
+    list: listTasks,
     mine: listMyEvaluationTasks,
+    adjudicationMine: listMyAdjudicationTasks,
     pool: listTaskPool,
     claim: claimTask,
     decline: declineTask,
     setExpertise: setEvaluatorExpertise,
+    assignable: listAssignableEmployees,
+    assign: assignTask,
   },
   scoring: {
     criteria: listScoringCriteria,
     mine: getMyScoring,
     save: saveMyScoring,
     confirm: confirmMyScoring,
+    listForApplication: listApplicationScorings,
+    summary: getApplicationScoringSummary,
+  },
+  adjudication: {
+    get: getApplicationAdjudication,
+    save: saveApplicationAdjudication,
+    confirm: confirmApplicationAdjudication,
+  },
+  reports: {
+    dashboard: getDashboardReport,
+    pipeline: getPipelineReport,
+    statusBreakdown: getStatusBreakdownReport,
+    processingTime: getProcessingTimeReport,
+    reviewerWorkload: getReviewerWorkloadReport,
+    scoringSummary: getScoringSummaryReport,
+    stalled: getStalledReport,
+    auditTrail: getReportAuditTrail,
+    exportUrl: reportsExportUrl,
   },
   personalDetails: personalDetailsApi,
   addresses: addressApi,
@@ -527,11 +744,14 @@ export const api = {
 export const handoffApi = {
   permissions: getMyPermissions,
   programmes: () => apiFetch<unknown[]>("/api/programmes/"),
-  timeline: (id: string) => apiFetch<unknown[]>(`/api/applications/${id}/timeline`),
-  completeness: (id: string) => apiFetch<unknown>(`/api/applications/${id}/completeness`),
+  timeline: (id: string) =>
+    apiFetch<unknown[]>(`/api/applications/${id}/timeline`),
+  completeness: (id: string) =>
+    apiFetch<unknown>(`/api/applications/${id}/completeness`),
   reviews: () => apiFetch<unknown[]>("/api/reviews/assigned"),
-  adjudication: (id: string) => apiFetch<unknown>(`/api/applications/${id}/adjudication`),
-  feedback: (id: string) => apiFetch<unknown[]>(`/api/applications/${id}/feedback`),
+  adjudication: getApplicationAdjudication,
+  feedback: (id: string) =>
+    apiFetch<unknown[]>(`/api/applications/${id}/feedback`),
   notifications: () => apiFetch<unknown[]>("/api/notifications/"),
-  reports: () => apiFetch<unknown>("/api/reports/overview"),
+  reports: getDashboardReport,
 };
