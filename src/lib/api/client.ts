@@ -9,7 +9,10 @@ import type {
   ApplicationPatch,
   ApplicationDocumentOut,
   AuditLogOut,
+  ClaimTaskIn,
   ClarificationFilters,
+  DeclineTaskIn,
+  ExpertiseIn,
   ClarificationOut,
   CommercialBankerIn,
   CommercialBankerOut,
@@ -48,6 +51,9 @@ import type {
   ShareholderIn,
   ShareholderOut,
   ShareholderPatch,
+  TaskOut,
+  TaskPoolOut,
+  ExpertiseOut,
   UserOut,
   UserPermissionsOut,
 } from "./types";
@@ -246,6 +252,37 @@ export function respondToClarification(id: string, response: string) {
   });
 }
 
+/* --------------------------- Tasks & claim pool ---------------------------- */
+
+/** Evaluation tasks currently assigned to the signed-in reviewer. */
+export function listMyEvaluationTasks() {
+  return apiFetch<ListOut<TaskOut>>("/api/tasks/?task_type=evaluation");
+}
+
+/** Pending evaluation tasks the reviewer may claim, ranked by expertise. */
+export function listTaskPool() {
+  return apiFetch<TaskPoolOut>("/api/tasks/pool");
+}
+
+export function claimTask(taskId: string, reason = "") {
+  return mutate<TaskOut>(`/api/tasks/${taskId}/claim`, "POST", {
+    reason,
+  } satisfies ClaimTaskIn);
+}
+
+export function declineTask(taskId: string, reason: string) {
+  return mutate<TaskOut>(`/api/tasks/${taskId}/decline`, "POST", {
+    reason,
+  } satisfies DeclineTaskIn);
+}
+
+/** Admin-only: set the sectors an evaluator is comfortable assessing. */
+export function setEvaluatorExpertise(userId: string, sectors: string[]) {
+  return mutate<ExpertiseOut>(`/api/tasks/evaluators/${userId}/expertise`, "PATCH", {
+    sectors,
+  } satisfies ExpertiseIn);
+}
+
 /* ---------------------- Generic applicant-detail resources ---------------- */
 
 export type ResourceApi<Out, In, Patch> = {
@@ -407,6 +444,13 @@ export const api = {
   },
   clarifications: { list: listClarifications },
   audit: { list: listAuditLogs },
+  tasks: {
+    mine: listMyEvaluationTasks,
+    pool: listTaskPool,
+    claim: claimTask,
+    decline: declineTask,
+    setExpertise: setEvaluatorExpertise,
+  },
   personalDetails: personalDetailsApi,
   addresses: addressApi,
   contacts: contactApi,

@@ -33,6 +33,42 @@
 - [Contribution and collaboration](#contribution-and-collaboration)
 - [Acceptance checklist](#acceptance-checklist)
 - [References and ownership](#references-and-ownership)
+- [Decision tree (evolution)](#decision-tree-evolution)
+
+## Decision tree (evolution)
+
+This section is a living record of decisions made while the platform is being built. It exists because the design is evolving: an entry records **what was decided, why, and what it changed**, so earlier choices are not silently forgotten. Add a new row whenever a workflow, data model or integration choice is settled.
+
+| # | Date | Area | Decision | Why | Effect |
+|---|------|------|----------|-----|--------|
+| 1 | 2026-11-23 | Backend of record | The Vercel-hosted Django API at `https://ceda-django-api.vercel.app` is the single source of truth. `https://ceda-api.bawetsi.com` is a **different server** and must never be called. | Avoids writing to/probing the wrong database. | `vercel.json` pins `BACKEND_API_ORIGIN`; the frontend never hard-codes the other host. |
+| 2 | 2026-11-23 | API access | All browser API calls go through the same-origin `/api/backend/*` proxy with a strict endpoint allowlist; trailing slashes are preserved and cookies forwarded. | Keeps sessions working, avoids CORS, and prevents accidental calls to unconfirmed endpoints. | `src/app/api/backend/[...path]/route.ts`; unlisted paths 404. |
+| 3 | 2026-11-23 | Data honesty | No mock/fake counts, saves or backend data. Screens that are not backed by a confirmed endpoint stay honest placeholders. | The demo must not claim functionality that does not exist. | Dashboards and registries derive from real Django responses. Unconfirmed `handoffApi.*` helpers remain unused. |
+| 4 | 2026-11-23 | Seed data | Real demo records (programme calls, applications, document types) were seeded into the production DB with an **idempotent** Django command, not fabricated in the UI. | Screens were empty because the DB had users but no content. | `seed_demo_portal` + `test_seed_demo_portal`; 144 Django tests pass. |
+| 5 | 2026-11-23 | Wizard validation | Required dates are validated **per step** before any save. Autosave silently skips a step whose required date is still empty; "Save draft" and "Save & continue" show a specific inline message. `handleSubmit` is no longer used for autosave (uses `getValues()` directly). | Django requires `date_of_incorporation`, `date_of_birth` and shareholder `dob`; empty strings produced `422 input is too short` and repeated autosave spam. | No invalid date reaches the backend; no misleading error banner while a user is still typing. |
+| 6 | 2026-11-23 | Notifications | There is no backend notifications endpoint. The header dropdown is derived from `GET /api/applications/` + `GET /api/clarifications/` and is labelled as such. | A fake `/api/notifications/` would violate decision #3 (the proxy allowlist blocks it). | Each user sees notifications based on the applications/clarifications they are actually allowed to see. |
+| 7 | 2026-11-23 | Workflow smoke test | Verified the full chain live through the proxy: customer submit → verifier accepts documents & verifies → two evaluators score & confirm → adjudicator decides & confirms → admin audit logs. State ended `accepted`; 8 audit-log entries recorded. | Confirms role boundaries and state transitions work against the real backend. | Admin audit trail and reports/dashboard return real data. |
+| 8 | 2026-11-23 | Evaluator assignment | **Hybrid model chosen** (see below): auto-assign by sector expertise, evaluators may decline (task returns to pool) and claim extra work from a domain-filtered pool; admin can override. | Pure round-robin can assign an energy expert to a health project; pure self-selection risks cherry-picking and unclaimed applications. | Adds `User.expertise_sectors` (migration `0034`), sector inference, `pool`/`claim`/`decline`/`expertise` endpoints, and the evaluator Review queue UI. 150 Django tests pass. |
+| 9 | 2026-11-23 | Decline vs conflict + claim cap | A **decline** only releases the assignment slot (no `ConflictDeclaration` record); a formal conflict remains a separate action. Claims are capped by `evaluators_per_application` (capacity), not by a per-reviewer quota. | Keeps the two actions distinct — "I can't take this now" vs "I have a conflict of interest" — and avoids a reviewer hoarding work. | `POST /api/tasks/{id}/decline` requires a reason (≥10 chars) and sets the task back to `pending`; `POST /api/tasks/{id}/claim` refuses when the task is full. |
+
+### Decision 8 detail — evaluator assignment (hybrid)
+
+**Context.** The original `assign_task()` round-robins across active users in the `evaluator` group and ignores domain. Applications only have free-text `business_nature`/`project_title`; reviewers had no expertise field. A `Task` can already be `pending` (under-assigned) and scoring already records `no_conflict_declared`, which are useful primitives.
+
+**Chosen flow.**
+
+1. When an application reaches `evaluation`, infer a coarse sector from its text (energy, agriculture, fintech, health, logistics, manufacturing, ICT, general).
+2. Rank available evaluators: those whose `expertise_sectors` include the sector first, then everyone else; use the existing round-robin cursor *within* each tier for fairness.
+3. Auto-assign `evaluators_per_application` reviewers as today, so nothing sits unclaimed.
+4. An assigned evaluator may **decline** (with a reason). Their assignment is deactivated and the task drops back to `pending` for refill.
+5. Evaluators can browse a **pool** of `pending`/under-assigned evaluation tasks, filtered to their expertise, and **claim** a slot (subject to capacity and conflict rules).
+6. Admin keeps manual assign/override via the existing endpoints.
+
+**Rejected alternatives.** Pure queue (no expertise match) and pure self-select pool (unclaimed applications / cherry-picking).
+
+**Resolved (see decision 9).** A decline releases the slot but does **not** create a `ConflictDeclaration`; declaring a formal conflict is a separate action so the two are not conflated. Claiming is capped only by the task's `evaluators_per_application` capacity — there is no per-reviewer quota yet (revisit if reviewers hoard work).
+
+**Frontend.** The evaluator "Review queue" screen (`src/components/burnz/evaluator/`) shows auto-assigned work and the claim pool side by side. Pool rows are ranked by `expertise_match`, can be filtered to the reviewer's expertise, and expose a one-click "Claim for review" action; assigned rows expose "Open review workspace" and a reason-required "Decline assignment". API helpers live in `src/lib/api/client.ts` (`listTaskPool`, `claimTask`, `declineTask`, `setEvaluatorExpertise`) and pass through the existing `/api/backend/*` proxy (the `api/tasks` prefix was already allowed).
 
 ## Product overview
 

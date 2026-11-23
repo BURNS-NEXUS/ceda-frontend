@@ -275,6 +275,38 @@ export type AuditLogOut = {
   created_at: string;
 };
 
+/* ---------------------------------- Tasks ---------------------------------- */
+
+export type TaskAssigneeOut = { id: string; username: string; email: string };
+export type TaskOut = {
+  id: string;
+  application_id: string;
+  task_type: string;
+  status: string;
+  assignees: TaskAssigneeOut[];
+  created_at: string;
+  updated_at: string;
+};
+/** An evaluation task available to claim, ranked by the reviewer's expertise. */
+export type TaskPoolItemOut = {
+  id: string;
+  application_id: string;
+  project_title: string;
+  company_no: string;
+  business_nature: string;
+  sector: string;
+  sector_label: string;
+  expertise_match: boolean;
+  required_assignees: number;
+  assigned_count: number;
+  created_at: string;
+};
+export type TaskPoolOut = ListOut<TaskPoolItemOut>;
+export type ClaimTaskIn = { reason?: string };
+export type DeclineTaskIn = { reason: string };
+export type ExpertiseIn = { sectors: string[] };
+export type ExpertiseOut = { user_id: string; username: string; sectors: string[] };
+
 /* -------------------------------- Documents ------------------------------- */
 
 export type DocumentTypeOut = {

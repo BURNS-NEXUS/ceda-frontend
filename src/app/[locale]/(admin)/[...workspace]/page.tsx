@@ -7,6 +7,7 @@ import { useDemoRole } from "@/context/demo-role-context";
 import { roleLabels } from "@/layout/app-layout/sidebar/data";
 import { useParams } from "next/navigation";
 import RoleDemoWorkspace from "@/components/burnz/role-demo-workspace";
+import EvaluatorReviewQueue from "@/components/burnz/evaluator";
 import WorkflowOperations, { workflowPaths } from "@/components/burnz/workflow-operations";
 
 const screens: Record<string, { title: string; description: string }> = {
@@ -15,7 +16,7 @@ const screens: Record<string, { title: string; description: string }> = {
   "innovator/innovations": { title: "My innovations & documents", description: "Manage innovation records and supporting evidence." },
   "innovator/notifications": { title: "Notifications", description: "Track application events and clarification requests." },
   "innovator/profile": { title: "Profile & organisation", description: "Maintain your contact identity and organisation details." },
-  "evaluator/reviews": { title: "Assigned reviews", description: "Assigned applications sorted by due date and review status." },
+  "evaluator/reviews": { title: "Review queue", description: "Applications auto-matched to your expertise, plus a claim pool for pending reviews." },
   "evaluator/reviews/workspace": { title: "Review workspace", description: "Inspect a versioned application and score each criterion." },
   "evaluator/guidelines": { title: "Review guidelines", description: "Published rubric, scoring scale and confidentiality guidance." },
   "evaluator/profile": { title: "Evaluator profile", description: "Manage your evaluator identity and availability." },
@@ -71,6 +72,7 @@ export default function WorkspaceScreen() {
         <>
           {key === "admin/programmes" && <ProgrammeCalls manage />}
           {key === "admin/screening" && <AdminWorkspace screenKey={key} />}
+          {key === "evaluator/reviews" && <EvaluatorReviewQueue />}
           <WorkflowOperations key={key} paths={workflowPaths[key]} />
         </>
       ) : key.startsWith("admin/") ? (
