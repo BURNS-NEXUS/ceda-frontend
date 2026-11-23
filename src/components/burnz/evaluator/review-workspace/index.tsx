@@ -148,6 +148,12 @@ export default function ReviewWorkspace() {
   async function handleSave() {
     const payload = buildPayload();
     if (!payload || !selectedId) return;
+    if (criteria.some(wholeNumberOnly) && !noConflict) {
+      setActionError(
+        "Declare that you have no conflict of interest before saving rubric scores.",
+      );
+      return;
+    }
     setSaving(true);
     setActionError(null);
     setMessage(null);
@@ -337,7 +343,7 @@ export default function ReviewWorkspace() {
                 <span>
                   I have no conflict of interest with this applicant.
                   <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
-                    Required for the innovation rubric before a review can be confirmed.
+                    Required before rubric scores can be saved or confirmed.
                   </span>
                 </span>
               </label>

@@ -14,7 +14,7 @@ import { listScoringCriteria, type ScoringCriterionOut } from "@/lib/api/client"
 import { errorMessage, PanelEmpty, PanelError, PanelSkeleton } from "../../ui/async-state";
 import SectionCard from "../../ui/section-card";
 import StatusBadge from "../../ui/status-badge";
-import { wholeNumberOnly } from "../utils";
+import { wholeNumberOnly, RATING_LABELS } from "../utils";
 
 /** The published rubric and the rules evaluators work under. */
 export default function ReviewGuidelines() {
@@ -120,6 +120,25 @@ export default function ReviewGuidelines() {
         )}
       </SectionCard>
 
+      <SectionCard
+        title="Rating scale"
+        description="Every criterion is scored from 1 to 5. The specification fixes 1 = Poor and 5 = Excellent; the labels between are the portal's plain-language guide."
+      >
+        <ol className="grid gap-3 sm:grid-cols-5">
+          {RATING_LABELS.map(({ score, label }) => (
+            <li
+              key={score}
+              className="rounded-lg border border-gray-200 p-3 text-center dark:border-ink-700"
+            >
+              <p className="text-title-sm font-semibold text-ink-800 dark:text-white">
+                {score}
+              </p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{label}</p>
+            </li>
+          ))}
+        </ol>
+      </SectionCard>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <SectionCard
           title="How a review works"
@@ -128,7 +147,7 @@ export default function ReviewGuidelines() {
           <ol className="list-inside list-decimal space-y-3 text-sm text-gray-600 dark:text-gray-300">
             <li>Claim an application from the shared review queue. Work matching your declared expertise is listed first.</li>
             <li>Read the verified application record and download the evidence you need.</li>
-            <li>Score each criterion, add a short note, and save a draft as often as you like.</li>
+            <li>Score each criterion from 1 to 5 with a short note, and save a draft as often as you like.</li>
             <li>Declare that you have no conflict of interest and record your evidence reference and overall comment.</li>
             <li>Confirm the review. Confirmation is final; your scores then count toward the application decision.</li>
           </ol>
