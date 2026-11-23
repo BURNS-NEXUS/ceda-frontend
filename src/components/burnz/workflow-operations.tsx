@@ -69,7 +69,7 @@ export default function WorkflowOperations({ paths }: { paths: string[] }) {
   const evaluatorWorkspace = paths === workflowPaths["evaluator/reviews/workspace"];
   const [applicationId, setApplicationId] = useState("");
   const [assignedIds, setAssignedIds] = useState<string[]>([]);
-  const [assignmentStatus, setAssignmentStatus] = useState("Loading assignments…");
+  const [assignmentStatus, setAssignmentStatus] = useState("Loading assignments...");
   useEffect(() => {
     if (!evaluatorWorkspace) return;
     let active = true;
