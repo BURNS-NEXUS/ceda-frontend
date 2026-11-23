@@ -13,11 +13,19 @@ import type {
   ShareholderIn,
 } from "@/lib/api/client";
 
+export function isValidDateValue(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
 export const wizardSchema = z.object({
   project_title: z.string(),
   application_type: z.enum(["individual", "company", "all"]),
   company_no: z.string(),
-  incorporation_date: z.string(),
+  incorporation_date: z.string().refine(isValidDateValue, {
+    message: "Enter a valid incorporation date.",
+  }),
   contact_person: z.string(),
   telephone: z.string(),
   business_nature: z.string(),

@@ -30,6 +30,7 @@ import SaveIndicator, { type SaveState } from "../../ui/save-indicator";
 import { CheckboxField, TextField, type FieldConfig } from "./fields";
 import {
   emptyWizardValues,
+  isValidDateValue,
   stepFields,
   toAddress,
   toApplicationIn,
@@ -52,7 +53,7 @@ const fieldGroups: FieldConfig[][] = [
   [
     { name: "project_title", label: "Project title", placeholder: "Solar-powered irrigation system", wide: true, hint: "A short, specific name for the innovation." },
     { name: "company_no", label: "Company registration number", placeholder: "e.g. 2024/123456/07" },
-    { name: "incorporation_date", label: "Incorporation date", type: "date" },
+    { name: "incorporation_date", label: "Incorporation date", type: "date", hint: "Django needs this date before it can save a draft." },
     { name: "contact_person", label: "Contact person", placeholder: "Full name" },
     { name: "telephone", label: "Telephone", type: "tel", placeholder: "+27 11 000 0000" },
     { name: "email", label: "Email", type: "email", placeholder: "you@company.co.za" },
@@ -144,6 +145,7 @@ export default function ApplicationWizard({
   const [step, setStep] = useState(0);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(Boolean(applicationId));
   const recordIds = useRef<Record<string, string>>({});
@@ -199,7 +201,7 @@ export default function ApplicationWizard({
         });
         recordIds.current = ids;
       } catch (caught) {
-        if (active) setError(errorMessage(caught));
+        if (active) setLoadError(errorMessage(caught));
       } finally {
         if (active) {
           setLoading(false);
@@ -309,6 +311,11 @@ export default function ApplicationWizard({
     setError(null);
     try {
       let applicationIdToUse = savedId.current;
+      if (!applicationIdToUse && !isValidDateValue(values.incorporation_date)) {
+        setSaveState("idle");
+        setError("Add a valid incorporation date before saving this application.");
+        return false;
+      }
       if (step === 0) {
         const payload = toApplicationIn(values);
         if (applicationIdToUse) {
@@ -409,7 +416,7 @@ export default function ApplicationWizard({
       </div>
     );
   }
-  if (error && step === 0 && !id) return <PanelError message={error} />;
+  if (loadError) return <PanelError message={loadError} />;
 
   return (
     <div className="space-y-5">
