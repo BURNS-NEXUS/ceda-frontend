@@ -115,7 +115,7 @@ export default function EvaluatorReviewQueue() {
 
           <SectionCard
             title="Claim pool"
-            description="Submitted applications still needing a reviewer. Work matching your declared expertise is listed first."
+            description="Verified applications waiting for an evaluator. Work matching your declared expertise is listed first."
             actions={
               <Button
                 size="sm"

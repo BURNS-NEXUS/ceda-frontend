@@ -259,9 +259,14 @@ export function respondToClarification(id: string, response: string) {
 
 /* --------------------------- Tasks & claim pool ---------------------------- */
 
+/** Tasks of a given type visible to the signed-in user. */
+export function listTasks(taskType: "evaluation" | "verification" | "adjudication") {
+  return apiFetch<ListOut<TaskOut>>(`/api/tasks/?task_type=${taskType}`);
+}
+
 /** Evaluation tasks currently assigned to the signed-in reviewer. */
 export function listMyEvaluationTasks() {
-  return apiFetch<ListOut<TaskOut>>("/api/tasks/?task_type=evaluation");
+  return listTasks("evaluation");
 }
 
 /** Pending evaluation tasks the reviewer may claim, ranked by expertise. */

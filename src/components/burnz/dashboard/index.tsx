@@ -4,7 +4,7 @@ import { useDemoRole } from "@/context/demo-role-context";
 import { roleLabels, type DemoRole } from "@/layout/app-layout/sidebar/data";
 import AdminSummary from "./admin-summary";
 import InnovatorSummary from "./innovator-summary";
-import UnconnectedSummary from "./unconnected-summary";
+import ReviewSummary from "./review-summary";
 
 const copy: Record<DemoRole, { title: string; description: string }> = {
   innovator: {
@@ -12,8 +12,8 @@ const copy: Record<DemoRole, { title: string; description: string }> = {
     description: "Continue a saved draft and track applications recorded in Django.",
   },
   evaluator: {
-    title: "Your assigned reviews",
-    description: "Review workflows will appear here when their endpoints are published.",
+    title: "Your review workspace",
+    description: "Claim verified applications from the shared pool and score those you have taken on.",
   },
   programmeAdmin: {
     title: "Programme overview",
@@ -21,7 +21,7 @@ const copy: Record<DemoRole, { title: string; description: string }> = {
   },
   adjudicator: {
     title: "Decisions that stand up",
-    description: "Adjudication data will appear here when its endpoints are published.",
+    description: "Compare recorded scores and capture an authorised outcome with a rationale.",
   },
 };
 
@@ -46,7 +46,7 @@ export default function BurnzDashboard() {
       {role === "innovator" ? <InnovatorSummary /> : null}
       {role === "programmeAdmin" ? <AdminSummary /> : null}
       {role === "evaluator" || role === "adjudicator" ? (
-        <UnconnectedSummary role={role} />
+        <ReviewSummary role={role} />
       ) : null}
     </div>
   );
