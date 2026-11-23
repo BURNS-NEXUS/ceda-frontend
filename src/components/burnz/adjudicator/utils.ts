@@ -89,11 +89,29 @@ export function friendlyDecisionAction(entry: {
   details: unknown;
 }): { title: string; detail: string | null } {
   const resource = entry.resource_type.toLowerCase();
-  if (resource === "applicationadjudication") {
+
+  if (entry.action.startsWith("Confirmed adjudication")) {
     const rest = triageDetails(entry.details);
     return {
       title: "Adjudication decision confirmed",
       detail: rest.finalScore,
+    };
+  }
+
+  if (
+    resource === "applicationscoring" ||
+    entry.action.startsWith("Confirmed scoring")
+  ) {
+    return {
+      title: "Independent review confirmed",
+      detail: null,
+    };
+  }
+
+  if (entry.action.startsWith("Set adjudication scores")) {
+    return {
+      title: "Adjudication scores saved",
+      detail: null,
     };
   }
 
@@ -109,9 +127,22 @@ export function friendlyDecisionAction(entry: {
   }
 
   return {
-    title: "Application record updated",
+    title: entry.action.replace(/ for application [a-z0-9]+/i, ""),
     detail: null,
   };
+}
+
+/** Plain-language record type for the audit trail. */
+export function auditResourceLabel(resourceType: string): string {
+  const labels: Record<string, string> = {
+    application: "Application",
+    applicationscoring: "Independent review",
+    applicationadjudication: "Final decision",
+    task: "Work item",
+    document: "Evidence document",
+  };
+  const key = resourceType.toLowerCase().replaceAll("_", "");
+  return labels[key] ?? resourceType.replaceAll("_", " ");
 }
 
 function triageDetails(details: unknown): { finalScore: string | null } {

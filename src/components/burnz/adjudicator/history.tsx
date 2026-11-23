@@ -10,7 +10,11 @@ import {
 } from "../ui/async-state";
 import SectionCard from "../ui/section-card";
 import type { AdjudicationCase } from "./types";
-import { formatDateTime, friendlyDecisionAction } from "./utils";
+import {
+  auditResourceLabel,
+  formatDateTime,
+  friendlyDecisionAction,
+} from "./utils";
 
 interface HistoryProps {
   cases: AdjudicationCase[];
@@ -112,7 +116,7 @@ export default function DecisionHistory({ cases }: HistoryProps) {
                 ) : null}
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   {entry.actor_username ?? "System"} ·{" "}
-                  {entry.resource_type.replaceAll("_", " ")}
+                  {auditResourceLabel(entry.resource_type)}
                 </p>
               </li>
             );
