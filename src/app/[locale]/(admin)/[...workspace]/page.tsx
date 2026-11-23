@@ -1,5 +1,6 @@
 "use client";
 
+import ProgrammeCalls from "@/components/burnz/programme-calls";
 import AdminWorkspace from "@/components/burnz/admin/admin-workspace";
 import ApplicationWorkspace from "@/components/burnz/applications/application-workspace";
 import { useDemoRole } from "@/context/demo-role-context";
@@ -66,8 +67,9 @@ export default function WorkspaceScreen() {
 
       {key === "innovator/applications" || key === "innovator/innovations" ? (
         <ApplicationWorkspace />
-      ) : workflowPaths[key] ? (
+      ) : key === "innovator/programmes" ? <ProgrammeCalls /> : workflowPaths[key] ? (
         <>
+          {key === "admin/programmes" && <ProgrammeCalls manage />}
           {key === "admin/screening" && <AdminWorkspace screenKey={key} />}
           <WorkflowOperations key={key} paths={workflowPaths[key]} />
         </>

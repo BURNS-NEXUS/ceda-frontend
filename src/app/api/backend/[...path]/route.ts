@@ -5,6 +5,7 @@ const BACKEND_ORIGIN = process.env.BACKEND_API_ORIGIN ?? "https://ceda-api.bawet
 // deliberately blocked so the proxy cannot become an open relay.
 const ALLOWED_PREFIXES = [
   "api/health",
+  "api/programmes",
   "api/auth/",
   "api/me/permissions",
   "api/tasks",

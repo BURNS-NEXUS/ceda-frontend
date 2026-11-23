@@ -1,4 +1,28 @@
 {
+  "programmeCalls": {
+    "title": "Call title",
+    "description": "Description",
+    "eligibility": "Eligibility",
+    "required_documents": "Required documents",
+    "opens_on": "Opening date",
+    "closes_on": "Deadline",
+    "brief": "Optional PDF brief (up to 3 MB)",
+    "new": "Create a programme call",
+    "save": "Save draft",
+    "draft": "Draft",
+    "open": "Open",
+    "closed": "Closed",
+    "upcoming": "Upcoming",
+    "download": "Download call brief",
+    "apply": "Apply",
+    "publish": "Publish call",
+    "applications": "View applications",
+    "noEntries": "No applications for this call.",
+    "back": "Back to programme calls",
+    "submitted": "Application submitted. Reference {id}.",
+    "empty": "No programme calls available.",
+    "loading": "Loading\u2026"
+  },
   "common": {
     "downloadDocument": "Download document",
     "home": "Home",

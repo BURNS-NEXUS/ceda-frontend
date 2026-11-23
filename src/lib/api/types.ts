@@ -79,7 +79,7 @@ export type ApplicationFields = {
 };
 
 export type ApplicationOut = ApplicationFields & { id: string; state: string };
-export type ApplicationIn = ApplicationFields;
+export type ApplicationIn = ApplicationFields & { programme_call_id?: number };
 export type ApplicationPatch = NullablePartial<ApplicationFields>;
 export type FeedbackApplicationIn = { reason: string };
 

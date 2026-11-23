@@ -133,9 +133,11 @@ const helpCopy = [
 
 export default function ApplicationWizard({
   applicationId,
+  programmeCallId,
   onDone,
 }: {
   applicationId?: string;
+  programmeCallId?: number;
   onDone: (applicationId: string) => void;
 }) {
   const [id, setId] = useState<string | null>(applicationId ?? null);
@@ -144,7 +146,9 @@ export default function ApplicationWizard({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(Boolean(applicationId));
-  const [recordIds, setRecordIds] = useState<Record<string, string>>({});
+  const recordIds = useRef<Record<string, string>>({});
+  const savedId = useRef(applicationId);
+  const saveQueue = useRef(Promise.resolve(true));
   const [requiredDocuments, setRequiredDocuments] = useState<RequiredDocumentOut[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const readyRef = useRef(!applicationId);
@@ -193,7 +197,7 @@ export default function ApplicationWizard({
         Object.entries(found).forEach(([key, value]) => {
           if (value) ids[key] = value;
         });
-        setRecordIds(ids);
+        recordIds.current = ids;
       } catch (caught) {
         if (active) setError(errorMessage(caught));
       } finally {
@@ -289,36 +293,38 @@ export default function ApplicationWizard({
       key: string,
       payload: In,
     ) => {
-      const existingId = recordIds[key];
+      const existingId = recordIds.current[key];
       const saved = existingId
         ? await api.update(existingId, payload as unknown as Patch)
         : await api.create(payload);
-      setRecordIds((current) => ({ ...current, [key]: saved.id }));
+      recordIds.current[key] = saved.id;
       return saved;
     },
-    [recordIds],
+    [],
   );
 
-  const saveStep = useCallback(async (values: WizardValues): Promise<boolean> => {
+  const persistStep = useCallback(async (values: WizardValues): Promise<boolean> => {
     if (!readyRef.current) return false;
     setSaveState("saving");
     setError(null);
     try {
-      let applicationIdToUse = id;
+      let applicationIdToUse = savedId.current;
       if (step === 0) {
         const payload = toApplicationIn(values);
         if (applicationIdToUse) {
           await updateApplication(applicationIdToUse, payload);
         } else {
-          const created = await createApplication(payload);
+          const created = await createApplication({ ...payload, programme_call_id: programmeCallId });
           applicationIdToUse = created.id;
+          savedId.current = created.id;
           setId(created.id);
         }
       } else if (!applicationIdToUse) {
         // Project basics are always saved first; guard against a skipped step.
-        const created = await createApplication(toApplicationIn(values));
+        const created = await createApplication({ ...toApplicationIn(values), programme_call_id: programmeCallId });
         applicationIdToUse = created.id;
-        setId(created.id);
+        savedId.current = created.id;
+          setId(created.id);
       }
 
       if (step === 1 && applicationIdToUse) {
@@ -344,7 +350,12 @@ export default function ApplicationWizard({
       setError(errorMessage(caught));
       return false;
     }
-  }, [step, id, upsert]);
+  }, [step, programmeCallId, upsert]);
+
+  const saveStep = useCallback((values: WizardValues) => {
+    saveQueue.current = saveQueue.current.then(() => persistStep(values));
+    return saveQueue.current;
+  }, [persistStep]);
 
   useEffect(() => {
     if (!readyRef.current) return;
