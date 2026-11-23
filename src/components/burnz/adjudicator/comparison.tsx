@@ -2,6 +2,8 @@
 
 import DetailField from "@/components/burnz/profile/detail-field";
 import EvidenceList from "@/components/burnz/evaluator/review-workspace/evidence-list";
+import { buttonVariants } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 import {
   getApplication,
   getApplicationScoringSummary,
@@ -75,6 +77,14 @@ export default function Comparison({ applicationId }: ComparisonProps) {
         <SectionCard
           title={detail.project_title}
           description="Verified application details used by both reviewers."
+          actions={
+            <Link
+              href="/adjudicator/decisions"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Score this case
+            </Link>
+          }
         >
           <div className="flex flex-wrap gap-2">
             <StatusBadge

@@ -9,9 +9,13 @@ import {
   getApplication,
   getApplicationAdjudication,
   getApplicationScoringSummary,
+  listApplicationScorings,
   listScoringCriteria,
   saveApplicationAdjudication,
   type ApplicationAdjudicationOut,
+  type ApplicationDetailOut,
+  type ApplicationScoringOut,
+  type ApplicationScoringSummary,
   type ScoringCriterionOut,
 } from "@/lib/api/client";
 import { useCallback, useEffect, useState } from "react";
@@ -23,6 +27,7 @@ import {
 } from "../ui/async-state";
 import SectionCard from "../ui/section-card";
 import StatusBadge, { toneForState } from "../ui/status-badge";
+import ReferencePanel from "./reference-panel";
 import { formatDateTime, formatScore, outcomeLabel } from "./utils";
 
 type ScoreDraft = Record<number, { score: string; comment: string }>;
@@ -46,6 +51,12 @@ export default function Decisions({
   const [rationale, setRationale] = useState("");
   const [state, setState] = useState("");
   const [mean, setMean] = useState<string>("—");
+  const [application, setApplication] = useState<ApplicationDetailOut | null>(
+    null,
+  );
+  const [comparison, setComparison] =
+    useState<ApplicationScoringSummary | null>(null);
+  const [reviews, setReviews] = useState<ApplicationScoringOut[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -58,19 +69,29 @@ export default function Decisions({
     setLoadError(null);
     setActionError(null);
     try {
-      const [rubric, decision, application, comparison] = await Promise.all([
-        listScoringCriteria(),
-        getApplicationAdjudication(applicationId).catch((caught) => {
-          if (caught instanceof ApiError && caught.status === 404) return null;
-          throw caught;
-        }),
-        getApplication(applicationId),
-        getApplicationScoringSummary(applicationId).catch(() => null),
-      ]);
+      const [rubric, decision, applicationRecord, comparisonSummary, sessions] =
+        await Promise.all([
+          listScoringCriteria(),
+          getApplicationAdjudication(applicationId).catch((caught) => {
+            if (caught instanceof ApiError && caught.status === 404)
+              return null;
+            throw caught;
+          }),
+          getApplication(applicationId),
+          getApplicationScoringSummary(applicationId).catch(() => null),
+          listApplicationScorings(applicationId).catch(() => []),
+        ]);
       setCriteria(rubric);
       setAdjudication(decision);
-      setState(application.state);
-      setMean(comparison ? formatScore(comparison.overall_weighted_mean) : "—");
+      setApplication(applicationRecord);
+      setComparison(comparisonSummary);
+      setReviews(sessions.filter((session) => session.status === "confirmed"));
+      setState(applicationRecord.state);
+      setMean(
+        comparisonSummary
+          ? formatScore(comparisonSummary.overall_weighted_mean)
+          : "—",
+      );
       const draft: ScoreDraft = {};
       for (const criterion of rubric) {
         const saved = decision?.scores.find(
@@ -212,6 +233,12 @@ export default function Decisions({
         ) : null}
       </SectionCard>
 
+      <ReferencePanel
+        application={application}
+        comparison={comparison}
+        reviews={reviews}
+      />
+
       <SectionCard
         title="Your adjudication scores"
         description="Use the same six-criterion CEDA rubric as the reviewers. The final score is the weighted sum calculated by Django."
@@ -263,7 +290,9 @@ export default function Decisions({
                 </div>
                 {locked ? (
                   <p className="text-sm text-emerald-700 dark:text-emerald-300">
-                    This decision is confirmed and locked.
+                    This decision was already confirmed, so the scores are
+                    read-only. Select another assigned case to rate, or ask the
+                    programme administrator to reopen this one.
                   </p>
                 ) : (
                   <div className="flex flex-wrap items-center gap-3">
