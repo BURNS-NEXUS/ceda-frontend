@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_ORIGIN = process.env.BACKEND_API_ORIGIN ?? "https://ceda-api.bawetsi.com";
+// Verified Django deployment of record. The legacy ceda-api.bawetsi.com host
+// points at a different, older server and must never be used by this proxy.
+const BACKEND_ORIGIN =
+  process.env.BACKEND_API_ORIGIN ?? "https://ceda-django-api.vercel.app";
 // Every prefix in the NinjaAPI 3.1 contract. Anything outside this list is
 // deliberately blocked so the proxy cannot become an open relay.
 const ALLOWED_PREFIXES = [
@@ -31,7 +34,10 @@ const ALLOWED_PREFIXES = [
   "api/loans",
 ];
 
-async function forward(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
+async function forward(
+  request: NextRequest,
+  context: { params: Promise<{ path: string[] }> },
+) {
   const { path } = await context.params;
   // The catch-all param drops a trailing slash, but Django requires one on
   // collection endpoints. Read it from the incoming URL instead.
@@ -45,34 +51,58 @@ async function forward(request: NextRequest, context: { params: Promise<{ path: 
     return normalized === base || normalized.startsWith(`${base}/`);
   });
   if (!isAllowed) {
-    return NextResponse.json({ detail: "Backend route is not exposed through the frontend proxy." }, { status: 404 });
+    return NextResponse.json(
+      { detail: "Backend route is not exposed through the frontend proxy." },
+      { status: 404 },
+    );
   }
   const target = `${BACKEND_ORIGIN}/${relativePath}${request.nextUrl.search}`;
   const headers = new Headers(request.headers);
   headers.delete("host");
   headers.delete("content-length");
-  const body = ["GET", "HEAD"].includes(request.method) ? undefined : await request.arrayBuffer();
+  const body = ["GET", "HEAD"].includes(request.method)
+    ? undefined
+    : await request.arrayBuffer();
   // Follow Django's APPEND_SLASH etc. on the backend origin. Passing those
   // redirects through would leak a Location like /api/applications/ into the
   // browser, where /api/backend is missing and the session cookie is wrong.
   let response: Response;
   try {
-    response = await fetch(target, { method: request.method, headers, body, redirect: "follow", cache: "no-store" });
-  } catch {
-    return NextResponse.json({ detail: "The portal could not reach the Django API (502)." }, {
-      status: 502, headers: { "Cache-Control": "private, no-store" },
+    response = await fetch(target, {
+      method: request.method,
+      headers,
+      body,
+      redirect: "follow",
+      cache: "no-store",
     });
+  } catch {
+    return NextResponse.json(
+      { detail: "The portal could not reach the Django API (502)." },
+      {
+        status: 502,
+        headers: { "Cache-Control": "private, no-store" },
+      },
+    );
   }
-  const output = new NextResponse(response.body, { status: response.status, statusText: response.statusText });
+  const output = new NextResponse(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+  });
   response.headers.forEach((value, key) => {
     const lowerKey = key.toLowerCase();
-    if (lowerKey === "content-encoding" || lowerKey === "content-length") return;
+    if (lowerKey === "content-encoding" || lowerKey === "content-length")
+      return;
     if (lowerKey === "set-cookie") return;
     output.headers.set(key, value);
   });
   for (const value of response.headers.getSetCookie()) {
-    const cookie = value.replace(/;\s*Domain=[^;]+/gi, "").replace(/;\s*Path=[^;]+/gi, "; Path=/");
-    output.headers.append("set-cookie", /;\s*Path=/i.test(cookie) ? cookie : cookie + "; Path=/");
+    const cookie = value
+      .replace(/;\s*Domain=[^;]+/gi, "")
+      .replace(/;\s*Path=[^;]+/gi, "; Path=/");
+    output.headers.append(
+      "set-cookie",
+      /;\s*Path=/i.test(cookie) ? cookie : cookie + "; Path=/",
+    );
   }
   output.headers.set("Cache-Control", "private, no-store");
   return output;
